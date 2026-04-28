@@ -1,0 +1,26 @@
+<?php
+class controllerAdmin {
+    public static function formLoginSite() {
+        include_once('viewAdmin/formLogin.php');
+    }
+    //форма авторизации админа
+    public static function loginAction() {
+        $logIn = modelAdmin::userAuthentication();
+        if(isset($logIn) and $logIn==true) {
+            include_once('viewAdmin/startAdmin.php');
+        }
+        else {
+            $_SESSION['errorString'] = 'Неправильное имя пользователя или пароль';
+            include_once('viewAdmin/formLogin.php');
+        }
+    }
+    //выход из админ панели
+    public static function logoutAction() {
+        modelAdmin::userLogout();
+        include_once('viewAdmin/formLogin.php');
+    }
+    //страница error
+    public static function error404() {
+        include_once('viewAdmin/error404.php');
+    }
+}
