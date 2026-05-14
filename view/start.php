@@ -14,17 +14,78 @@ $tr = $languages[$langCode] ?? [];
 $tt = static function ($key, $fallback = '') use ($tr) {
 	return $tr[$key] ?? $fallback;
 };
+if (!isset($arr) || !is_array($arr)) {
+	$arr = [];
+}
+if (!isset($reviews) || !is_array($reviews)) {
+	$reviews = [];
+}
+$reviewDefaults = [
+	[
+		'text' => 'Clean execution, strong mood and a homepage that finally looks like a brand.',
+		'date' => 'Featured review',
+		'rating' => 5,
+	],
+	[
+		'text' => 'The product cards and the popup give the site a real store feeling.',
+		'date' => 'Featured review',
+		'rating' => 4,
+	],
+	[
+		'text' => 'Dark, editorial and easy to navigate. That is the right direction.',
+		'date' => 'Featured review',
+		'rating' => 5,
+	],
+];
+$reviewCarouselItems = [];
+foreach (array_slice($reviews ?? [], 0, 3) as $index => $review) {
+	$reviewCarouselItems[] = [
+		'text' => $review['text'] ?? '',
+		'date' => $review['date'] ?? 'Featured review',
+		'rating' => max(1, 5 - ($index % 2)),
+	];
+}
+if (count($reviewCarouselItems) < 3) {
+	foreach ($reviewDefaults as $review) {
+		$reviewCarouselItems[] = $review;
+		if (count($reviewCarouselItems) >= 3) {
+			break;
+		}
+	}
+}
+$reviewCarouselItems = array_merge($reviewCarouselItems, [
+	[
+		'text' => 'Chainwork, brutal contrast and a cleaner flow. It feels like the section is alive now.',
+		'date' => 'Featured review',
+		'rating' => 5,
+	],
+	[
+		'text' => 'The carousel makes the comments feel curated instead of static.',
+		'date' => 'Featured review',
+		'rating' => 4,
+	],
+	[
+		'text' => 'Fast, dark and readable. The moving cards make the page feel active.',
+		'date' => 'Featured review',
+		'rating' => 5,
+ 	],
+]);
+$reviewCarouselItems = array_slice($reviewCarouselItems, 0, 6);
 ?>
-<!-- Full-screen entry hero with looping animated background video from Pexels (CC0 License) -->
+<!-- Full-screen entry hero with background image from void1 -->
 <section class="entry-hero" id="home">
-	<video class="entry-hero-video" autoplay muted loop playsinline preload="metadata" poster="img/cap.png">
-		<source src="https://videos.pexels.com/video-files/5926382/5926382-sd_640_360_25fps.mp4" type="video/mp4">
-		<source src="https://videos.pexels.com/video-files/5926382/5926382-hd_1280_720_25fps.mp4" type="video/mp4">
-	</video>
+	<div class="entry-hero-bg" style="background-image: url('img/void7.jpg'); background-position: 90% center;"></div>
 	<div class="entry-hero-overlay"></div>
+	<div class="blood-snake-layer hero-blood-layer" aria-hidden="true">
+		<div class="blood-snake s1"></div>
+		<div class="blood-snake s2"></div>
+		<div class="blood-snake s3"></div>
+		<div class="blood-snake s4"></div>
+		<div class="blood-snake s5"></div>
+	</div>
 	<div class="entry-hero-content">
 		<p class="eyebrow"><?php echo htmlspecialchars($tt('intro_label', 'TERMINAL BOOT / RIPPING STEAM')); ?></p>
-		<h1><?php echo htmlspecialchars($tt('intro_title', 'THE VOID')); ?></h1>
+		<h1 class="heartbeat-pulse"><?php echo htmlspecialchars($tt('intro_title', 'THE VOID')); ?></h1>
 	</div>
 </section>
 
@@ -59,22 +120,17 @@ $tt = static function ($key, $fallback = '') use ($tr) {
 	</div>
 
 	<div class="hero-visual">
-		<div class="hero-frame"></div>
-		<div class="hero-orb hero-orb-a"></div>
-		<div class="hero-orb hero-orb-b"></div>
-		<div class="hero-card hero-card-top">
-			<span>New season</span>
-			<strong>Cold silhouettes</strong>
-		</div>
-		<div class="hero-card hero-card-bottom">
-			<span>Selected edit</span>
-			<strong>Street / altar / noise</strong>
-		</div>
+		<!-- Plain image element without overlays so the photo is unobstructed -->
+		<img src="img/void1.jpg" alt="Hero visual" class="hero-visual-img" />
 	</div>
 </section>
 
+<div class="full-width-divider">
+	<img src="img/rustychain.png" alt="Chain divider" class="divider-image" />
+</div>
+
 <section class="section-block" id="releases">
-	<div class="section-heading">
+	<div class="section-heading section-heading-center">
 		<p><?php echo htmlspecialchars($tt('newest_releases', 'Newest releases')); ?></p>
 		<h2><?php echo htmlspecialchars($tt('release_title', 'Three products we would put on the front wall')); ?></h2>
 	</div>
@@ -84,8 +140,12 @@ $tt = static function ($key, $fallback = '') use ($tr) {
 	</div>
 </section>
 
+<div class="full-width-image" style="height: 50vh; background-image: url('img/void6.jpg'); background-position: center top; background-attachment: fixed;">
+	<div class="hero-overlay" style="position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);"></div>
+</div>
+
 <section class="section-block about-section" id="about">
-	<div class="section-heading compact">
+	<div class="section-heading compact section-heading-center">
 		<p><?php echo htmlspecialchars($tt('about', 'About us')); ?></p>
 		<h2><?php echo htmlspecialchars($tt('about_title', 'We build a darker retail world with a cleaner structure.')); ?></h2>
 	</div>
@@ -115,40 +175,58 @@ $tt = static function ($key, $fallback = '') use ($tr) {
 	</div>
 </section>
 
+<div class="full-width-divider">
+	<img src="img/rustychain.png" alt="Chain divider" class="divider-image" />
+</div>
+
 <section class="section-block reviews-section" id="reviews">
-	<div class="section-heading compact">
+	<div class="section-heading compact section-heading-center">
 		<p>Reviews</p>
-		<h2>Three voices from the void</h2>
+		<h2>Three voices that keep moving</h2>
 	</div>
 
-	<div class="reviews-grid">
-		<?php if (!empty($reviews)): ?>
-			<?php foreach (array_slice($reviews, 0, 3) as $review): ?>
-				<article class="review-card">
-					<div class="review-mark">"</div>
-					<p><?= htmlspecialchars($review['text']) ?></p>
-					<span><?= htmlspecialchars($review['date']) ?></span>
-				</article>
-			<?php endforeach; ?>
-		<?php else: ?>
-			<article class="review-card">
-				<div class="review-mark">"</div>
-				<p>Clean execution, strong mood and a homepage that finally looks like a brand.</p>
-				<span>Featured review</span>
-			</article>
-			<article class="review-card">
-				<div class="review-mark">"</div>
-				<p>The product cards and the popup give the site a real store feeling.</p>
-				<span>Featured review</span>
-			</article>
-			<article class="review-card">
-				<div class="review-mark">"</div>
-				<p>Dark, editorial and easy to navigate. That is the right direction.</p>
-				<span>Featured review</span>
-			</article>
-		<?php endif; ?>
+	<div class="review-carousel-shell">
+		<button type="button" class="review-carousel-arrow review-carousel-arrow-left" data-review-prev aria-label="Previous reviews">&#10094;</button>
+		<div class="review-carousel-viewport" data-review-carousel>
+			<div class="review-carousel-track">
+				<?php foreach ($reviewCarouselItems as $review): ?>
+					<article class="review-card review-carousel-card">
+						<div class="review-mark"><img src="img/skull.png" alt="" aria-hidden="true"></div>
+						<p><?= htmlspecialchars($review['text']) ?></p>
+						<div class="review-rating" aria-label="Rating <?= (int)$review['rating']; ?> out of 5">
+							<?php for ($skull = 1; $skull <= 5; $skull++): ?>
+								<img src="img/skull.png" alt="" class="review-rating-skull<?= $skull <= (int)$review['rating'] ? ' is-active' : ''; ?>">
+							<?php endfor; ?>
+						</div>
+						<span><?= htmlspecialchars($review['date']) ?></span>
+					</article>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<button type="button" class="review-carousel-arrow review-carousel-arrow-right" data-review-next aria-label="Next reviews">&#10095;</button>
 	</div>
+
+	<form class="review-compose" data-review-form>
+		<div class="review-compose-head review-compose-head-center">
+			<p class="cart-note">Your review</p>
+			<h3>Leave feedback</h3>
+		</div>
+		<textarea data-review-text rows="4" maxlength="280" placeholder="Write your review here..." required></textarea>
+		<div class="review-rating-picker" data-review-rating-picker>
+			<input type="hidden" value="5" data-review-rating>
+			<button type="button" class="review-rating-choice is-selected" data-rating-value="1" aria-label="Rate 1 skull"><img src="img/skull.png" alt=""></button>
+			<button type="button" class="review-rating-choice is-selected" data-rating-value="2" aria-label="Rate 2 skulls"><img src="img/skull.png" alt=""></button>
+			<button type="button" class="review-rating-choice is-selected" data-rating-value="3" aria-label="Rate 3 skulls"><img src="img/skull.png" alt=""></button>
+			<button type="button" class="review-rating-choice is-selected" data-rating-value="4" aria-label="Rate 4 skulls"><img src="img/skull.png" alt=""></button>
+			<button type="button" class="review-rating-choice is-selected" data-rating-value="5" aria-label="Rate 5 skulls"><img src="img/skull.png" alt=""></button>
+		</div>
+		<button type="submit" class="submitBtn review-submit">Post review</button>
+	</form>
 </section>
+
+<div class="full-width-image" style="height: 50vh; background-image: url('img/void2.jpg'); background-position: center; background-attachment: fixed;">
+	<div class="hero-overlay" style="position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);"></div>
+</div>
 
 <div class="newsletter-popup" id="newsletterPopup" aria-hidden="true">
 	<div class="newsletter-backdrop" data-popup-close></div>

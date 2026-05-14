@@ -29,8 +29,9 @@ $isHomePage = isset($pageClass) && strpos($pageClass, 'home') !== false;
 <div class="void-scope">
 <nav class="one navbar navbar-expand-lg">
     <div class="container-fluid nav-shell">
+        <!-- LEFT: Logo + Languages -->
         <div class="nav-left-stack">
-            <a class="nav-link cult-main brand-link nav-hero" href="./">THE VOID</a>
+            <a class="nav-link cult-main brand-link nav-hero nav-hover-text" href="./">THE VOID</a>
             <div class="lang-under-brand">
                 <a class="lang-link text-glow<?php echo $langCode === 'ru' ? ' active' : ''; ?>" href="?lang=ru">RU</a>
                 <a class="lang-link text-glow<?php echo $langCode === 'en' ? ' active' : ''; ?>" href="?lang=en">EN</a>
@@ -38,39 +39,39 @@ $isHomePage = isset($pageClass) && strpos($pageClass, 'home') !== false;
             </div>
         </div>
 
+        <!-- CENTER: Text Menu Only -->
         <div class="collapse navbar-collapse justify-content-center nav-center" id="mainMenu">
             <ul class="topmenu navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link text-glow nav-home-icon" href="./" aria-label="Home">⌂</a>
+                    <a class="nav-link text-glow nav-hover-text" href="all"><?php echo htmlspecialchars($tt('releases', 'Releases')); ?></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-glow" href="all"><?php echo htmlspecialchars($tt('releases', 'Releases')); ?></a>
+                    <a class="nav-link text-glow nav-hover-text" href="reviews"><?php echo htmlspecialchars($tt('reviews', 'Reviews')); ?></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-glow" href="reviews"><?php echo htmlspecialchars($tt('reviews', 'Reviews')); ?></a>
+                    <a class="nav-link text-glow nav-hover-text" href="category?id=1">MEN (DEAD SOULS)</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-glow" href="category?id=1">MEN (DEAD SOULS)</a>
+                    <a class="nav-link text-glow nav-hover-text" href="category?id=2">WOMEN (DARK GRACE)</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-glow" href="category?id=2">WOMEN (DARK GRACE)</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-glow" href="category?id=3">ACCESSORIES (IRON & BONE)</a>
+                    <a class="nav-link text-glow nav-hover-text" href="category?id=3">ACCESSORIES (IRON & BONE)</a>
                 </li>
             </ul>
         </div>
 
-        <div class="nav-right-tools">
-            <a class="nav-link cult-main brand-link nav-hero join-link" href="registerForm">JOIN THE CLUB</a>
-            <div class="nav-meta-icons">
-                <a href="account" class="meta-link account-link">
-                    <span class="text-glow">ACCOUNT</span>
-                    <img src="img/Gemini_Generated_Image_eodwdveodwdveodw.png" alt="Account avatar">
+        <!-- RIGHT: Join + Icons (Account | Home | Cart) -->
+        <div class="nav-right-stack">
+            <a class="nav-link cult-main brand-link nav-hero join-link nav-hover-text" href="registerForm">JOIN THE CLUB</a>
+            <div class="nav-icons-right">
+                <a href="account" class="nav-link text-glow nav-icon-item nav-hover-image" title="Account">
+                    <img src="img/varrount.png" alt="Account">
                 </a>
-                <a href="cart" class="meta-link cart-link">
-                    <span class="text-glow">CART</span>
-                    <img src="img/cap.png" alt="Cart icon">
+                <a href="./" class="nav-link text-glow nav-icon-item nav-hover-image" title="Home">
+                    <img src="img/vhome.png" alt="Home">
+                </a>
+                <a href="cart" class="nav-link text-glow nav-icon-item nav-hover-image" title="Cart">
+                    <img src="img/vcart.png" alt="Cart">
                 </a>
             </div>
         </div>
@@ -123,17 +124,10 @@ $isHomePage = isset($pageClass) && strpos($pageClass, 'home') !== false;
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <audio id="terminalClick" src="sounds/click.mp3" preload="auto"></audio>
 
-<div class="blood-snake-layer" aria-hidden="true">
-    <div class="blood-snake s1"></div>
-    <div class="blood-snake s2"></div>
-    <div class="blood-snake s3"></div>
-    <div class="blood-snake s4"></div>
-    <div class="blood-snake s5"></div>
-</div>
 <div class="crt-overlay"></div>
 <div class="screen-glitch"></div>
 
-<script src="void-effects.js"></script>
+<script src="void-effects.js?v=<?php echo time(); ?>"></script>
 </div>
 </body>
 </html>

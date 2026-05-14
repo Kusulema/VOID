@@ -84,6 +84,173 @@ const renderCart = () => {
     cartTotal.textContent = total.toFixed(2);
 };
 
+const escapeHtml = (value) => String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const initReviewCarousel = () => {
+    const viewport = document.querySelector('[data-review-carousel]');
+    const track = viewport ? viewport.querySelector('.review-carousel-track') : null;
+    const prevButton = document.querySelector('[data-review-prev]');
+    const nextButton = document.querySelector('[data-review-next]');
+    const form = document.querySelector('[data-review-form]');
+
+    if (!viewport || !track) {
+        return;
+    }
+
+    const ratingButtons = form ? Array.from(form.querySelectorAll('[data-rating-value]')) : [];
+    const ratingInput = form ? form.querySelector('[data-review-rating]') : null;
+    const textInput = form ? form.querySelector('[data-review-text]') : null;
+    let activeRating = Number(ratingInput && ratingInput.value) || 5;
+    let originalCards = Array.from(track.children).map((card) => card.cloneNode(true));
+    let cloneCount = 0;
+    let index = 0;
+    let autoTimer = null;
+
+    const setRating = (value) => {
+        activeRating = Math.max(1, Math.min(5, Number(value) || 5));
+
+        if (ratingInput) {
+            ratingInput.value = String(activeRating);
+        }
+
+        ratingButtons.forEach((button) => {
+            const buttonValue = Number(button.dataset.ratingValue) || 0;
+            button.classList.toggle('is-selected', buttonValue <= activeRating);
+        });
+    };
+
+    const createCard = (review) => {
+        const card = document.createElement('article');
+        card.className = 'review-card review-carousel-card';
+        const rating = Math.max(1, Math.min(5, Number(review.rating) || 5));
+
+        card.innerHTML = `
+            <div class="review-mark"><img src="img/skull.png" alt="" aria-hidden="true"></div>
+            <p>${escapeHtml(review.text || '')}</p>
+            <div class="review-rating" aria-label="Rating ${rating} out of 5">
+                ${Array.from({ length: 5 }, (_, skullIndex) => {
+                    const activeClass = skullIndex < rating ? ' is-active' : '';
+                    return `<img src="img/skull.png" alt="" class="review-rating-skull${activeClass}">`;
+                }).join('')}
+            </div>
+            <span>${escapeHtml(review.date || 'Featured review')}</span>
+        `;
+
+        return card;
+    };
+
+    const rebuildCarousel = () => {
+        const cards = originalCards.map((card) => card.cloneNode(true));
+        cloneCount = Math.min(3, cards.length);
+
+        track.innerHTML = '';
+        cards.slice(-cloneCount).forEach((card) => track.appendChild(card.cloneNode(true)));
+        cards.forEach((card) => track.appendChild(card.cloneNode(true)));
+        cards.slice(0, cloneCount).forEach((card) => track.appendChild(card.cloneNode(true)));
+
+        index = cloneCount;
+    };
+
+    const getOffset = () => {
+        const card = track.children[index] || track.children[cloneCount];
+
+        if (!card) {
+            return 0;
+        }
+
+        return card.offsetLeft;
+    };
+
+    const syncPosition = (animate = false) => {
+        track.style.transition = animate ? 'transform 650ms ease' : 'none';
+        track.style.transform = `translateX(-${getOffset()}px)`;
+    };
+
+    const move = (direction) => {
+        index += direction;
+        syncPosition(true);
+    };
+
+    const normalize = () => {
+        const originalLength = originalCards.length;
+
+        if (index >= cloneCount + originalLength) {
+            index = cloneCount;
+            syncPosition(false);
+        }
+
+        if (index < cloneCount) {
+            index = cloneCount + originalLength - 1;
+            syncPosition(false);
+        }
+    };
+
+    const restartAuto = () => {
+        if (autoTimer) {
+            clearInterval(autoTimer);
+        }
+
+        autoTimer = setInterval(() => move(1), 4500);
+    };
+
+    ratingButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            setRating(Number(button.dataset.ratingValue) || 5);
+        });
+    });
+
+    prevButton?.addEventListener('click', () => move(-1));
+    nextButton?.addEventListener('click', () => move(1));
+
+    track.addEventListener('transitionend', normalize);
+
+    viewport.addEventListener('mouseenter', () => {
+        if (autoTimer) {
+            clearInterval(autoTimer);
+            autoTimer = null;
+        }
+    });
+
+    viewport.addEventListener('mouseleave', restartAuto);
+
+    window.addEventListener('resize', () => syncPosition(false));
+
+    if (form) {
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const text = textInput ? textInput.value.trim() : '';
+            if (!text) {
+                return;
+            }
+
+            originalCards.unshift(createCard({
+                text,
+                date: 'Just now',
+                rating: activeRating,
+            }));
+
+            rebuildCarousel();
+            setRating(activeRating);
+            syncPosition(false);
+
+            if (textInput) {
+                textInput.value = '';
+            }
+        });
+    }
+
+    rebuildCarousel();
+    setRating(activeRating);
+    syncPosition(false);
+    restartAuto();
+};
+
 const openPopup = () => {
     const popup = document.getElementById('newsletterPopup');
     if (!popup) {
@@ -92,6 +259,8 @@ const openPopup = () => {
 
     popup.classList.add('is-open');
     popup.setAttribute('aria-hidden', 'false');
+    document.documentElement.classList.add('modal-scroll-lock');
+    document.body.classList.add('modal-scroll-lock');
 };
 
 const closePopup = () => {
@@ -103,6 +272,8 @@ const closePopup = () => {
     popup.classList.remove('is-open');
     popup.setAttribute('aria-hidden', 'true');
     sessionStorage.setItem('voidNewsletterClosed', '1');
+    document.documentElement.classList.remove('modal-scroll-lock');
+    document.body.classList.remove('modal-scroll-lock');
 };
 
 document.addEventListener('click', (event) => {
@@ -192,8 +363,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateCartBadge();
     renderCart();
-
-    if (document.body.dataset.page === 'home' && !sessionStorage.getItem('voidNewsletterClosed')) {
-        setTimeout(openPopup, 850);
-    }
+    initReviewCarousel();
 });

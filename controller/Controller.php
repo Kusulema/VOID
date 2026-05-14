@@ -2,7 +2,7 @@
 class Controller {
     public static function StartSite() {
         $arr = Product::getLast3Products();
-        $reviews = Comments::getLatestComments(3);
+        $reviews = Comments::getLatestComments(6);
         $pageClass = 'home-page';
         $showNewsletterPopup = true;
         include_once 'view/start.php';
