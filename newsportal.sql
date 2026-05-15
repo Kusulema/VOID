@@ -101,6 +101,12 @@ INSERT INTO `news` (`id`, `title`, `text`, `picture`, `category_id`, `user_id`) 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
+  `gender` varchar(20) NOT NULL DEFAULT 'unspecified',
+  `city` varchar(100) NOT NULL DEFAULT '',
+  `country` varchar(100) NOT NULL DEFAULT '',
+  `postcode` varchar(20) NOT NULL DEFAULT '',
+  `bank_account` varchar(100) NOT NULL DEFAULT '',
+  `wishlist` text NOT NULL,
   `picture` blob DEFAULT NULL,
   `job` varchar(100) NOT NULL,
   `email` varchar(50) NOT NULL,

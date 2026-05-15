@@ -28,11 +28,20 @@ elseif ($path == 'registerForm') {
 elseif ($path == 'registerAnswer') {
     $response = Controller::registerUser();
 }
+elseif ($path == 'login') {
+    $response = Controller::loginAction();
+}
+elseif ($path == 'logout') {
+    $response = Controller::logoutAction();
+}
 elseif ($path == 'allCategories') {
     $response = Controller::AllCategory(); // Используем уже существующий метод
 }
 elseif($path == 'cart' || $path == 'basket') {
     $response = Controller::Cart();
+}
+elseif($path == 'wishlist' && isset($_GET['id'])) {
+    $response = Controller::WishlistAction((int)$_GET['id'], $_GET['action'] ?? 'toggle');
 }
 elseif($path == 'account' || $path == 'cabinet') {
     $response = Controller::Account();

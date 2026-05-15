@@ -62,7 +62,8 @@ $isHomePage = isset($pageClass) && strpos($pageClass, 'home') !== false;
 
         <!-- RIGHT: Join + Icons (Account | Home | Cart) -->
         <div class="nav-right-stack">
-            <a class="nav-link cult-main brand-link nav-hero join-link nav-hover-text" href="registerForm">JOIN THE CLUB</a>
+            <?php $joinHref = isset($_SESSION['userId']) && !empty($_SESSION['userId']) ? 'account' : 'registerForm'; ?>
+            <a class="nav-link cult-main brand-link nav-hero join-link nav-hover-text" href="<?php echo $joinHref; ?>">JOIN THE CLUB</a>
             <div class="nav-icons-right">
                 <a href="account" class="nav-link text-glow nav-icon-item nav-hover-image" title="Account">
                     <img src="img/varrount.png" alt="Account">

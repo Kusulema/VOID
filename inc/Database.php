@@ -34,6 +34,13 @@ class database {
         return $stmt->fetch();
     }
 
+    function getOnePrepared($query, $params = []) {
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute($params);
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        return $stmt->fetch();
+    }
+
     function getAll($query) {
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -41,9 +48,28 @@ class database {
         return $stmt->fetchAll();
     }
 
+    function getAllPrepared($query, $params = []) {
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute($params);
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll();
+    }
+
     function executeRun($query) {
         $stmt = $this->conn->prepare($query);
         return $stmt->execute();
+    }
+
+    function executePrepared($query, $params = []) {
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute($params);
+    }
+
+    function hasColumn($table, $column) {
+        $query = 'SHOW COLUMNS FROM `'.$table.'` LIKE :column';
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute(['column' => $column]);
+        return (bool) $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
 ?>

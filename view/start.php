@@ -245,7 +245,7 @@ $reviewCarouselItems = array_slice($reviewCarouselItems, 0, 6);
 			</form>
 		</div>
 		<div class="newsletter-visual" aria-hidden="true">
-			<div class="newsletter-figure"></div>
+			<div class="newsletter-figure" style="background-image: url('img/void2.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;"></div>
 		</div>
 	</div>
 </div>

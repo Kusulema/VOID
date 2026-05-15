@@ -257,6 +257,10 @@ const openPopup = () => {
         return;
     }
 
+    if (popup.parentElement !== document.documentElement) {
+        document.documentElement.appendChild(popup);
+    }
+
     popup.classList.add('is-open');
     popup.setAttribute('aria-hidden', 'false');
     document.documentElement.classList.add('modal-scroll-lock');
@@ -353,12 +357,23 @@ setInterval(() => {
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('cultForm');
     const cursor = document.querySelector('.init-cursor');
+    const newsletterPopup = document.getElementById('newsletterPopup');
+
+    sessionStorage.removeItem('voidNewsletterClosed');
 
     if (cursor && form) {
         setTimeout(() => {
             cursor.style.display = 'none';
             form.classList.remove('hidden');
         }, 3600);
+    }
+
+    if (newsletterPopup && !sessionStorage.getItem('voidNewsletterClosed')) {
+        setTimeout(() => {
+            if (!sessionStorage.getItem('voidNewsletterClosed')) {
+                openPopup();
+            }
+        }, 10000);
     }
 
     updateCartBadge();

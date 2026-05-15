@@ -7,7 +7,7 @@ if(isset($result)) {
         ?>
             <div class="container">
                 <div class="alert alert-info">
-                    <strong>Пользователь добавлен.</strong><a href="admin/">Dashboard</a>
+                    <strong>Пользователь добавлен.</strong> Теперь можно войти в личный кабинет. <a href="login">Войти</a>
                 </div>
             </div>
             <?php
