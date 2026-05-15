@@ -334,6 +334,36 @@ document.addEventListener('click', (event) => {
     }
 });
 
+document.addEventListener('click', (event) => {
+    const heartLink = event.target.closest('a.wishlist-heart');
+    if (!heartLink) {
+        return;
+    }
+
+    event.preventDefault();
+
+    const url = heartLink.href;
+    if (!url) {
+        return;
+    }
+
+    const isActive = heartLink.classList.contains('active');
+    fetch(url, {
+        method: 'GET',
+        credentials: 'same-origin',
+        redirect: 'follow',
+    }).then((response) => {
+        if (!response.ok) {
+            throw new Error('Wishlist request failed');
+        }
+        heartLink.classList.toggle('active', !isActive);
+        heartLink.textContent = isActive ? '♡' : '♥';
+        heartLink.style.color = isActive ? 'rgba(255, 255, 255, 0.78)' : '#ff4d4d';
+    }).catch(() => {
+        // keep the existing state if the request fails
+    });
+});
+
 setInterval(() => {
     const boxes = document.querySelectorAll('.newsBox, .divBox, .review-card, .about-panel, .contact-panel, .cart-panel, .account-panel');
 

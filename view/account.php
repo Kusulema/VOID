@@ -40,7 +40,7 @@ if ($isLoggedIn) {
             <div class="about-panel about-panel-clickable account-feature" role="button" tabindex="0" data-popup-open="profilePopup">
                 <p class="eyebrow">PROFILE SETTINGS</p>
                 <h3>YOUR PROFILE</h3>
-                <p class="account-copy">Manage your delivery address, bank details and account info in one place.</p>
+                <p class="account-copy">Manage your delivery address, card details and account info in one place.</p>
             </div>
             <div class="about-panel about-panel-clickable account-feature" role="button" tabindex="0" data-popup-open="ordersPopup">
                 <p class="eyebrow">ORDER HISTORY</p>
@@ -83,7 +83,7 @@ if ($isLoggedIn) {
                                     <input type="text" class="cult-input" value="<?php echo htmlspecialchars($displayGender); ?>" disabled>
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label>Login</label>
+                                    <label>Username</label>
                                     <input type="text" class="cult-input" value="<?php echo htmlspecialchars($displayLogin); ?>" disabled>
                                 </div>
                             </div>
@@ -103,8 +103,28 @@ if ($isLoggedIn) {
                                     <input type="text" name="postcode" class="cult-input" value="<?php echo htmlspecialchars($currentUser['postcode'] ?? ''); ?>">
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label>Bank account</label>
+                                    <label>Account number</label>
                                     <input type="text" name="bank_account" class="cult-input" value="<?php echo htmlspecialchars($currentUser['bank_account'] ?? ''); ?>">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label>Card number</label>
+                                    <input type="text" name="card_number" class="cult-input" value="<?php echo htmlspecialchars($currentUser['card_number'] ?? ''); ?>">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label>Expiry date</label>
+                                    <input type="text" name="card_expiry" class="cult-input" value="<?php echo htmlspecialchars($currentUser['card_expiry'] ?? ''); ?>" placeholder="MM/YY">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label>Cardholder name</label>
+                                    <input type="text" name="card_name" class="cult-input" value="<?php echo htmlspecialchars($currentUser['card_name'] ?? ''); ?>">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label>Security code</label>
+                                    <input type="text" name="card_cvv" class="cult-input" value="<?php echo htmlspecialchars($currentUser['card_cvv'] ?? ''); ?>">
                                 </div>
                             </div>
                             <button type="submit" class="submitBtn">Save profile</button>
@@ -116,7 +136,7 @@ if ($isLoggedIn) {
                     <?php endif; ?>
                 </div>
                 <div class="newsletter-visual" aria-hidden="true">
-                    <div class="newsletter-figure" style="background-image: url('img/void2.jpg');"></div>
+                    <div class="newsletter-figure profile-figure" style="background-image: url('img/void3.jpg');"></div>
                 </div>
             </div>
         </div>
@@ -134,7 +154,7 @@ if ($isLoggedIn) {
                     </div>
                 </div>
                 <div class="newsletter-visual" aria-hidden="true">
-                    <div class="newsletter-figure" style="background-image: url('img/void2.jpg');"></div>
+                    <div class="newsletter-figure profile-figure" style="background-image: url('img/void3.jpg');"></div>
                 </div>
             </div>
         </div>
