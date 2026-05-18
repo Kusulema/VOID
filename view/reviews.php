@@ -14,15 +14,29 @@ $pageClass = 'inner-page reviews-page';
             <?php if (!empty($reviews)): ?>
                 <?php foreach ($reviews as $review): ?>
                     <article class="review-card">
-                        <div class="review-mark">"</div>
+                        <div class="review-mark"><img src="img/skull.png" alt="" aria-hidden="true"></div>
                         <p><?= htmlspecialchars($review['text']) ?></p>
+                        <div class="review-rating" aria-hidden="true">
+                            <img src="img/skull.png" alt="">
+                            <img src="img/skull.png" alt="">
+                            <img src="img/skull.png" alt="">
+                            <img src="img/skull.png" alt="">
+                            <img src="img/skull.png" alt="">
+                        </div>
                         <span><?= htmlspecialchars($review['date']) ?></span>
                     </article>
                 <?php endforeach; ?>
             <?php else: ?>
                 <article class="review-card">
-                    <div class="review-mark">"</div>
+                    <div class="review-mark"><img src="img/skull.png" alt="" aria-hidden="true"></div>
                     <p>No comments yet. The section is ready for live feedback once the comment flow is expanded.</p>
+                    <div class="review-rating" aria-hidden="true">
+                        <img src="img/skull.png" alt="">
+                        <img src="img/skull.png" alt="">
+                        <img src="img/skull.png" alt="">
+                        <img src="img/skull.png" alt="">
+                        <img src="img/skull.png" alt="">
+                    </div>
                     <span>Empty state</span>
                 </article>
             <?php endif; ?>

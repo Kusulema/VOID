@@ -202,27 +202,12 @@ a:hover { color: #ff1a1a; }
 </div>
 
 <script>
-const form = document.getElementById('loginForm');
 const status = document.getElementById('statusMessage');
-
-form.addEventListener('submit', function(e){
-    e.preventDefault();
-    status.className = 'status-message status-hash';
-    status.textContent = 'HASHING PASSWORD...';
-    
-
-    setTimeout(() => {
-        const success = Math.random() > 0.5; // случайный успех/провал
-        if(success){
-            status.className = 'status-message status-success';
-            status.textContent = 'ACCESS GRANTED';
-            form.submit(); // реально отправляем на сервер
-        } else {
-            status.className = 'status-message status-error glitch';
-            status.textContent = 'ACCESS DENIED';
-        }
-    }, 1500);
-});
+const errorText = <?php echo json_encode($_SESSION['errorString'] ?? ''); ?>;
+if (errorText) {
+    status.className = 'status-message status-error';
+    status.textContent = errorText;
+}
 </script>
 
 </body>

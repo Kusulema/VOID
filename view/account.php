@@ -10,6 +10,15 @@ $displayLogin = 'guest';
 $displayJoined = '—';
 $profileMessage = $profileMessage ?? '';
 $profileError = $profileError ?? '';
+$profileAutoOpen = (($_GET['open'] ?? '') === 'profilePopup');
+$missingFields = [];
+if (!empty($_GET['missing'])) {
+    $missingFields = array_values(array_filter(array_map('trim', explode(',', (string)$_GET['missing']))));
+}
+
+if (!empty($missingFields) && $profileError === '') {
+    $profileError = 'Missing profile data: ' . implode(', ', $missingFields);
+}
 
 if ($isLoggedIn) {
     $displayName = $currentUser['username'] ?? ($currentUser['name'] ?? ($_SESSION['name'] ?? 'Member'));
@@ -54,7 +63,7 @@ if ($isLoggedIn) {
             </div>
         </div>
 
-        <div class="newsletter-popup account-popup" id="profilePopup" aria-hidden="true">
+            <div class="newsletter-popup account-popup" id="profilePopup" aria-hidden="true">
             <div class="newsletter-backdrop" data-popup-close></div>
             <div class="newsletter-modal">
                 <button class="popup-close" type="button" data-popup-close aria-label="Close popup">×</button>
@@ -69,65 +78,50 @@ if ($isLoggedIn) {
                             <input type="hidden" name="profile_update" value="1">
                             <div class="form-row">
                                 <div class="form-group col-md-6">
-                                    <label>Name</label>
-                                    <input type="text" class="cult-input" value="<?php echo htmlspecialchars($displayName); ?>" disabled>
-                                </div>
-                                <div class="form-group col-md-6">
                                     <label>Email</label>
                                     <input type="email" class="cult-input" value="<?php echo htmlspecialchars($displayEmail); ?>" disabled>
                                 </div>
-                            </div>
-                            <div class="form-row">
                                 <div class="form-group col-md-6">
                                     <label>Gender</label>
-                                    <input type="text" class="cult-input" value="<?php echo htmlspecialchars($displayGender); ?>" disabled>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label>Username</label>
-                                    <input type="text" class="cult-input" value="<?php echo htmlspecialchars($displayLogin); ?>" disabled>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group col-md-6">
-                                    <label>City</label>
-                                    <input type="text" name="city" class="cult-input" value="<?php echo htmlspecialchars($currentUser['city'] ?? ''); ?>">
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label>Country</label>
-                                    <input type="text" name="country" class="cult-input" value="<?php echo htmlspecialchars($currentUser['country'] ?? ''); ?>">
+                                    <select name="gender" class="cult-input" disabled>
+                                        <option value="" <?php echo empty($currentUser['gender']) ? 'selected' : ''; ?>>Choose gender</option>
+                                        <option value="male" <?php echo (($currentUser['gender'] ?? '') === 'male') ? 'selected' : ''; ?>>Male</option>
+                                        <option value="female" <?php echo (($currentUser['gender'] ?? '') === 'female') ? 'selected' : ''; ?>>Female</option>
+                                        <option value="other" <?php echo (($currentUser['gender'] ?? '') === 'other') ? 'selected' : ''; ?>>Other</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="form-row">
-                                <div class="form-group col-md-6">
-                                    <label>Postcode</label>
-                                    <input type="text" name="postcode" class="cult-input" value="<?php echo htmlspecialchars($currentUser['postcode'] ?? ''); ?>">
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label>Account number</label>
-                                    <input type="text" name="bank_account" class="cult-input" value="<?php echo htmlspecialchars($currentUser['bank_account'] ?? ''); ?>">
+                                <div class="form-group col-md-12">
+                                    <label>Location (Country, City, Address, Postcode)</label>
+                                    <input type="text" name="address" class="cult-input" value="<?php echo htmlspecialchars($currentUser['address'] ?? trim((($currentUser['country'] ?? '') . ' ' . ($currentUser['city'] ?? '') . ' ' . ($currentUser['address'] ?? '') . ' ' . ($currentUser['postcode'] ?? '')))); ?>" disabled>
                                 </div>
                             </div>
-                            <div class="form-row">
-                                <div class="form-group col-md-6">
-                                    <label>Card number</label>
-                                    <input type="text" name="card_number" class="cult-input" value="<?php echo htmlspecialchars($currentUser['card_number'] ?? ''); ?>">
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label>Expiry date</label>
-                                    <input type="text" name="card_expiry" class="cult-input" value="<?php echo htmlspecialchars($currentUser['card_expiry'] ?? ''); ?>" placeholder="MM/YY">
-                                </div>
-                            </div>
+                            <!-- postcode removed: included in Location field -->
                             <div class="form-row">
                                 <div class="form-group col-md-6">
                                     <label>Cardholder name</label>
-                                    <input type="text" name="card_name" class="cult-input" value="<?php echo htmlspecialchars($currentUser['card_name'] ?? ''); ?>">
+                                    <input type="text" name="card_name" class="cult-input" value="<?php echo htmlspecialchars($currentUser['card_name'] ?? ''); ?>" disabled>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label>Card number</label>
+                                    <input type="text" name="card_number" class="cult-input" value="<?php echo htmlspecialchars($currentUser['card_number'] ?? ''); ?>" disabled>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label>Expiry date</label>
+                                    <input type="text" name="card_expiry" class="cult-input" value="<?php echo htmlspecialchars($currentUser['card_expiry'] ?? ''); ?>" placeholder="MM/YY" disabled>
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label>Security code</label>
-                                    <input type="text" name="card_cvv" class="cult-input" value="<?php echo htmlspecialchars($currentUser['card_cvv'] ?? ''); ?>">
+                                    <input type="text" name="card_cvv" class="cult-input" value="<?php echo htmlspecialchars($currentUser['card_cvv'] ?? ''); ?>" disabled>
                                 </div>
                             </div>
-                            <button type="submit" class="submitBtn">Save profile</button>
+                            <div style="display:flex;gap:8px;align-items:center;justify-content:center;">
+                                <button type="submit" class="submitBtn" style="width:45%;">Save profile</button>
+                                <button type="button" id="editProfileBtn" class="ghost-btn" style="width:45%;">Edit profile</button>
+                            </div>
                         </form>
                     <?php else: ?>
                         <p>Please sign in or create a profile to edit delivery and payment details here.</p>
@@ -135,8 +129,9 @@ if ($isLoggedIn) {
                         <a href="registerForm" class="ghost-btn">Create profile</a>
                     <?php endif; ?>
                 </div>
-                <div class="newsletter-visual" aria-hidden="true">
-                    <div class="newsletter-figure profile-figure" style="background-image: url('img/void3.jpg');"></div>
+                <div class="newsletter-visual profile-visual" aria-hidden="true">
+                    <div class="profile-photo" style="background-image: url('img/void3.jpg');"></div>
+                    <div class="profile-chain" style="background-image: url('img/rustychain.png');"></div>
                 </div>
             </div>
         </div>
@@ -149,12 +144,27 @@ if ($isLoggedIn) {
                     <p class="eyebrow">Order history</p>
                     <h2 id="ordersPopupLabel">Your orders</h2>
                     <p>When purchase data is available, it will show here with totals, dates, shipping address and purchased items.</p>
-                    <div class="newsletter-form">
-                        <div class="account-copy">No completed orders yet. Your history will appear once checkout is integrated.</div>
-                    </div>
+                    <div class="order-figure" style="background-image: url('img/void5.jpg');"></div>
+                    <div class="order-chain" style="background-image: url('img/rustychain.png');"></div>
                 </div>
                 <div class="newsletter-visual" aria-hidden="true">
-                    <div class="newsletter-figure profile-figure" style="background-image: url('img/void3.jpg');"></div>
+                    <div class="order-list">
+                        <div class="order-card">
+                            <div class="order-card-header">
+                                <h4>Order history</h4>
+                                <span>Order total</span>
+                            </div>
+                            <div class="order-item">
+                                <span>Product placeholder</span>
+                                <span>0.00 €</span>
+                            </div>
+                            <div class="order-summary">
+                                <span>Items: 0</span>
+                                <span>Total: 0.00 €</span>
+                            </div>
+                        </div>
+                        <div class="account-copy">No completed orders yet. Your history will appear once checkout is integrated.</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -167,30 +177,62 @@ if ($isLoggedIn) {
                     <p class="eyebrow">Wishlist</p>
                     <h2 id="wishlistPopupLabel">Saved items</h2>
                     <p>All products you liked are shown here in miniature cards. Click any item to open its product page.</p>
+                    <div class="wishlist-figure" style="background-image: url('img/void4.jpg');"></div>
+                    <div class="wishlist-chain" style="background-image: url('img/rustychain.png');"></div>
                 </div>
                 <div class="newsletter-visual" aria-hidden="true">
                     <?php if ($isLoggedIn && !empty($wishlistItems)): ?>
                         <div class="wishlist-grid">
                             <?php foreach ($wishlistItems as $wish): ?>
-                                <a href="product?id=<?php echo (int)$wish['id']; ?>" class="wishlist-card">
-                                    <div class="wishlist-card-image"><img src="data:image/jpeg;base64,<?php echo base64_encode($wish['picture']); ?>" alt="<?php echo htmlspecialchars($wish['title']); ?>"></div>
-                                    <div class="wishlist-card-copy">
-                                        <h4><?php echo htmlspecialchars($wish['title']); ?></h4>
-                                        <p class="price"><?php echo htmlspecialchars($wish['price'] ?? '—'); ?> €</p>
-                                    </div>
-                                </a>
+                                <div class="wishlist-card">
+                                    <a href="product?id=<?php echo (int)$wish['id']; ?>" class="wishlist-card-link">
+                                        <div class="wishlist-card-image"><img src="data:image/jpeg;base64,<?php echo base64_encode($wish['picture']); ?>" alt="<?php echo htmlspecialchars($wish['title']); ?>"></div>
+                                        <div class="wishlist-card-copy">
+                                            <h4><?php echo htmlspecialchars($wish['title']); ?></h4>
+                                            <p class="price"><?php echo htmlspecialchars($wish['price'] ?? '—'); ?> €</p>
+                                        </div>
+                                    </a>
+                                    <a href="wishlist?id=<?php echo (int)$wish['id']; ?>&action=remove" class="wishlist-remove" title="Remove">-</a>
+                                </div>
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
-                        <div class="newsletter-form">
-                            <div class="account-copy">No wishlist items saved yet. Add products with the heart and return to them later.</div>
-                        </div>
+                        <div class="account-copy">No items yet. Save products with the heart and return to them later.</div>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
 
         <script>
+        (function(){
+            <?php if ($profileAutoOpen): ?>
+            window.addEventListener('load', function() {
+                var openButton = document.querySelector('[data-popup-open="profilePopup"]');
+                if (openButton) {
+                    openButton.click();
+                }
+            });
+            <?php endif; ?>
+
+            // Toggle editable state for profile fields
+            document.addEventListener('click', function(event) {
+                var editBtn = event.target.closest('#editProfileBtn');
+                if (!editBtn) return;
+                var form = document.querySelector('.newsletter-form');
+                if (!form) return;
+                var inputs = form.querySelectorAll('.cult-input');
+                inputs.forEach(function(inp){
+                    if (inp.disabled) {
+                        inp.disabled = false;
+                    } else {
+                        inp.disabled = true;
+                    }
+                });
+                // Focus first editable input (skip disabled email)
+                var first = Array.from(inputs).find(function(i){ return !i.disabled && i.type !== 'email'; });
+                if (first) first.focus();
+            });
+        })();
         document.addEventListener('click', function(event) {
             const openButton = event.target.closest('[data-popup-open]');
             const closeButton = event.target.closest('[data-popup-close]');
@@ -204,6 +246,8 @@ if ($isLoggedIn) {
                     popup.setAttribute('aria-hidden', 'false');
                     document.documentElement.classList.add('modal-scroll-lock');
                     document.body.classList.add('modal-scroll-lock');
+                    // mark site as modal-active to disable background interactions/animations
+                    document.documentElement.classList.add('modal-active');
                 }
                 return;
             }
@@ -215,6 +259,7 @@ if ($isLoggedIn) {
                     popup.setAttribute('aria-hidden', 'true');
                     document.documentElement.classList.remove('modal-scroll-lock');
                     document.body.classList.remove('modal-scroll-lock');
+                    document.documentElement.classList.remove('modal-active');
                 }
                 return;
             }
@@ -224,6 +269,7 @@ if ($isLoggedIn) {
                 popupBackdrop.setAttribute('aria-hidden', 'true');
                 document.documentElement.classList.remove('modal-scroll-lock');
                 document.body.classList.remove('modal-scroll-lock');
+                document.documentElement.classList.remove('modal-active');
             }
         });
         </script>

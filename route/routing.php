@@ -25,8 +25,14 @@ elseif($path == 'news' && isset($_GET['id'])) {
 elseif ($path == 'registerForm') {
     $response = Controller::registerForm();
 }
+elseif ($path == 'insertcomment') {
+    $response = Controller::InsertComment();
+}
 elseif ($path == 'registerAnswer') {
     $response = Controller::registerUser();
+}
+elseif ($path == 'newsletterSend') {
+    $response = Controller::NewsletterSubscribe();
 }
 elseif ($path == 'login') {
     $response = Controller::loginAction();
@@ -39,6 +45,9 @@ elseif ($path == 'allCategories') {
 }
 elseif($path == 'cart' || $path == 'basket') {
     $response = Controller::Cart();
+}
+elseif($path == 'order') {
+    $response = Controller::PlaceOrder();
 }
 elseif($path == 'wishlist' && isset($_GET['id'])) {
     $response = Controller::WishlistAction((int)$_GET['id'], $_GET['action'] ?? 'toggle');

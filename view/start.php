@@ -224,8 +224,9 @@ $reviewCarouselItems = array_slice($reviewCarouselItems, 0, 6);
 	</form>
 </section>
 
-<div class="full-width-image" style="height: 50vh; background-image: url('img/void2.jpg'); background-position: center; background-attachment: fixed;">
+<div class="full-width-image" style="height: 50vh; background-image: url('img/void8.jpg'); background-position: center; background-attachment: scroll;">
 	<div class="hero-overlay" style="position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);"></div>
+	<a href="allproducts" class="hero-cta-button">SHOP NOW</a>
 </div>
 
 <div class="newsletter-popup" id="newsletterPopup" aria-hidden="true">
@@ -239,7 +240,7 @@ $reviewCarouselItems = array_slice($reviewCarouselItems, 0, 6);
 				Early access to new drops, private releases and limited edits.
 			</p>
 
-			<form class="newsletter-form" method="post" action="registerForm">
+			<form class="newsletter-form" method="post" action="newsletterSend">
 				<input type="email" name="email" placeholder="Email" required>
 				<button type="submit" class="submitBtn">Sign up</button>
 			</form>

@@ -12,6 +12,12 @@ elseif ($path == 'login') {
 elseif ($path == 'logout') {
     $response = controllerAdmin::logoutAction();
 }
+elseif ($path == 'commentsAdmin') {
+    $response = controllerAdmin::commentsList();
+}
+elseif ($path == 'commentAction' && isset($_GET['id']) && isset($_GET['action'])) {
+    $response = controllerAdmin::commentAction();
+}
 // Работа с товарами
 elseif($path == 'productAdmin') {
     $response = controllerAdminProduct::ProductList();

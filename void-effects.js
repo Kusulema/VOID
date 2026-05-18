@@ -73,10 +73,13 @@ const renderCart = () => {
         row.className = 'cart-item';
         row.innerHTML = `
             <div>
-                <strong>${item.title}</strong>
+                <strong>${escapeHtml(item.title)}</strong>
                 <span class="account-copy">Qty ${item.qty}</span>
             </div>
-            <div class="release-price">${price ? price.toFixed(2) + ' €' : '—'}</div>
+            <div class="cart-item-actions">
+                <span class="release-price">${price ? price.toFixed(2) + ' €' : '—'}</span>
+                <button type="button" class="ghost-btn cart-remove-btn" data-remove-item="${escapeHtml(item.id)}" aria-label="Remove one item">-1</button>
+            </div>
         `;
         cartList.appendChild(row);
     });
@@ -295,6 +298,29 @@ document.addEventListener('click', (event) => {
         return;
     }
 
+    const removeButton = event.target.closest('[data-remove-item]');
+    if (removeButton) {
+        event.preventDefault();
+        const itemId = removeButton.dataset.removeItem;
+        const cart = getCart();
+        const existing = cart.find((entry) => entry.id === itemId);
+        if (existing) {
+            existing.qty -= 1;
+            if (existing.qty <= 0) {
+                const index = cart.findIndex((entry) => entry.id === itemId);
+                if (index !== -1) {
+                    cart.splice(index, 1);
+                }
+            }
+        }
+
+        setCart(cart);
+        updateCartBadge();
+        renderCart();
+        playClick();
+        return;
+    }
+
     if (addToCartButton) {
         event.preventDefault();
         const item = {
@@ -365,6 +391,10 @@ document.addEventListener('click', (event) => {
 });
 
 setInterval(() => {
+    if (document.documentElement.classList.contains('modal-active')) {
+        return;
+    }
+
     const boxes = document.querySelectorAll('.newsBox, .divBox, .review-card, .about-panel, .contact-panel, .cart-panel, .account-panel');
 
     boxes.forEach((box) => {
@@ -378,6 +408,10 @@ setInterval(() => {
 }, 700);
 
 setInterval(() => {
+    if (document.documentElement.classList.contains('modal-active')) {
+        return;
+    }
+
     if (Math.random() < 0.92) {
         document.body.classList.add('glitch');
         setTimeout(() => document.body.classList.remove('glitch'), 180);
@@ -409,4 +443,25 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCartBadge();
     renderCart();
     initReviewCarousel();
+});
+
+document.addEventListener('submit', (event) => {
+    const form = event.target;
+    if (!form || !form.querySelector('input[type="password"]')) {
+        return;
+    }
+
+    const emailText = [
+        'Subject: You have rooted yourself in this dirt.',
+        'Preheader: Rust devours everything except us.',
+        '',
+        'Your e-mail has been successfully consumed.',
+        '',
+        'You are now subscribed to the chronicle of our filth.',
+        'No welcome bonuses for weaklings — only raw, unfiltered content and early access to what others will see too late.',
+        'We will brand your inbox when the next drop is due. Keep your eyes open.',
+        '',
+        '[ JOIN THE NETWORK ]'
+    ].join('\n');
+    alert(emailText);
 });

@@ -1,5 +1,64 @@
 <?php
 class Register{
+    private static function validatePaymentFields(array $data) {
+        $errors = [];
+        $normalized = $data;
+
+        $address = trim((string)($data['address'] ?? ''));
+        $cardName = trim((string)($data['card_name'] ?? ''));
+        $cardNumber = preg_replace('/\D+/', '', (string)($data['card_number'] ?? ''));
+        $cardExpiry = trim((string)($data['card_expiry'] ?? ''));
+        $cardCvv = preg_replace('/\D+/', '', (string)($data['card_cvv'] ?? ''));
+
+        if ($address === '') {
+            $errors['address'] = 'Delivery address is required.';
+        }
+
+        if ($cardName === '') {
+            $errors['card_name'] = 'Cardholder name is required.';
+        }
+
+        if ($cardNumber === '') {
+            $errors['card_number'] = 'Card number is required.';
+        } elseif (!preg_match('/^\d{13,19}$/', $cardNumber)) {
+            $errors['card_number'] = 'Card number must contain 13 to 19 digits.';
+        }
+
+        if ($cardExpiry === '') {
+            $errors['card_expiry'] = 'Expiry date is required.';
+        } elseif (!preg_match('/^(0[1-9]|1[0-2])\/\d{2}$/', $cardExpiry)) {
+            $errors['card_expiry'] = 'Expiry date must use MM/YY format.';
+        }
+
+        if ($cardCvv === '') {
+            $errors['card_cvv'] = 'Security code is required.';
+        } elseif (!preg_match('/^\d{3,4}$/', $cardCvv)) {
+            $errors['card_cvv'] = 'Security code must contain 3 or 4 digits.';
+        }
+
+        if ($cardNumber !== '') {
+            $normalized['card_number'] = $cardNumber;
+        }
+        if ($cardExpiry !== '') {
+            $normalized['card_expiry'] = $cardExpiry;
+        }
+        if ($cardCvv !== '') {
+            $normalized['card_cvv'] = $cardCvv;
+        }
+        if ($address !== '') {
+            $normalized['address'] = $address;
+        }
+        if ($cardName !== '') {
+            $normalized['card_name'] = $cardName;
+        }
+
+        return [empty($errors), $errors, $normalized];
+    }
+
+    public static function validateProfileForOrder(array $user) {
+        return self::validatePaymentFields($user);
+    }
+
     public static function registerUser() {
         $controll=array(0=>false,1=>'error');
         if (isset($_POST['save'])) {
@@ -196,12 +255,45 @@ class Register{
             return [0 => false, 1 => 'User session not found'];
         }
 
-        $city = trim($_POST['city'] ?? '');
-        $country = trim($_POST['country'] ?? '');
-        $postcode = trim($_POST['postcode'] ?? '');
+        $gender = trim($_POST['gender'] ?? '');
+        $location = trim($_POST['address'] ?? '');
+        $card_name = trim($_POST['card_name'] ?? '');
+        $card_number = trim($_POST['card_number'] ?? '');
+        $card_expiry = trim($_POST['card_expiry'] ?? '');
+        $card_cvv = trim($_POST['card_cvv'] ?? '');
         $bank_account = trim($_POST['bank_account'] ?? '');
 
+        list($isValid, $validationErrors, $normalized) = self::validatePaymentFields([
+            'address' => $location,
+            'card_name' => $card_name,
+            'card_number' => $card_number,
+            'card_expiry' => $card_expiry,
+            'card_cvv' => $card_cvv,
+        ]);
+
+        if (!$isValid) {
+            return [0 => false, 1 => implode("\n", array_values($validationErrors))];
+        }
+
+        $location = $normalized['address'];
+        $card_name = $normalized['card_name'];
+        $card_number = $normalized['card_number'];
+        $card_expiry = $normalized['card_expiry'];
+        $card_cvv = $normalized['card_cvv'];
+
         $db = new Database();
+        $ensureColumn = static function ($db, $column, $definition) {
+            if (!$db->hasColumn('users', $column)) {
+                $db->executeRun('ALTER TABLE `users` ADD COLUMN `' . $column . '` ' . $definition);
+            }
+        };
+
+        $ensureColumn($db, 'address', "varchar(255) NOT NULL DEFAULT ''");
+        $ensureColumn($db, 'card_name', "varchar(100) NOT NULL DEFAULT ''");
+        $ensureColumn($db, 'card_number', "varchar(64) NOT NULL DEFAULT ''");
+        $ensureColumn($db, 'card_expiry', "varchar(16) NOT NULL DEFAULT ''");
+        $ensureColumn($db, 'card_cvv', "varchar(16) NOT NULL DEFAULT ''");
+
         $columns = [];
         $params = [];
 
@@ -210,21 +302,44 @@ class Register{
             $params[':' . $column] = $value;
         };
 
-        if ($db->hasColumn('users', 'city')) {
-            $appendColumn($columns, $params, 'city', $city);
+        // Removed saving of full name per UI change (Full name field removed)
+        if ($gender !== '' && in_array($gender, ['male', 'female', 'other'], true) && $db->hasColumn('users', 'gender')) {
+            $appendColumn($columns, $params, 'gender', $gender);
         }
-        if ($db->hasColumn('users', 'country')) {
-            $appendColumn($columns, $params, 'country', $country);
+
+        if ($location !== '') {
+            if ($db->hasColumn('users', 'address')) {
+                $appendColumn($columns, $params, 'address', $location);
+            } elseif ($db->hasColumn('users', 'city')) {
+                $appendColumn($columns, $params, 'city', $location);
+            }
+            if ($db->hasColumn('users', 'country')) {
+                $appendColumn($columns, $params, 'country', '');
+            }
+            if ($db->hasColumn('users', 'postcode')) {
+                $appendColumn($columns, $params, 'postcode', '');
+            }
         }
-        if ($db->hasColumn('users', 'postcode')) {
-            $appendColumn($columns, $params, 'postcode', $postcode);
+
+        if ($card_name !== '' && $db->hasColumn('users', 'card_name')) {
+            $appendColumn($columns, $params, 'card_name', $card_name);
         }
+        if ($card_number !== '' && $db->hasColumn('users', 'card_number')) {
+            $appendColumn($columns, $params, 'card_number', $card_number);
+        }
+        if ($card_expiry !== '' && $db->hasColumn('users', 'card_expiry')) {
+            $appendColumn($columns, $params, 'card_expiry', $card_expiry);
+        }
+        if ($card_cvv !== '' && $db->hasColumn('users', 'card_cvv')) {
+            $appendColumn($columns, $params, 'card_cvv', $card_cvv);
+        }
+
         if ($db->hasColumn('users', 'bank_account')) {
             $appendColumn($columns, $params, 'bank_account', $bank_account);
         }
 
         if (empty($columns)) {
-            return [0 => true, 1 => 'Nothing to update'];
+            return [0 => true, 1 => ''];
         }
 
         $params[':id'] = (int)$_SESSION['userId'];

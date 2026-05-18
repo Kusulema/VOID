@@ -46,7 +46,7 @@ $isHomePage = isset($pageClass) && strpos($pageClass, 'home') !== false;
                     <a class="nav-link text-glow nav-hover-text" href="all"><?php echo htmlspecialchars($tt('releases', 'Releases')); ?></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-glow nav-hover-text" href="reviews"><?php echo htmlspecialchars($tt('reviews', 'Reviews')); ?></a>
+                    <a class="nav-link text-glow nav-hover-text" href="./#reviews"><?php echo htmlspecialchars($tt('reviews', 'Reviews')); ?></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-glow nav-hover-text" href="category?id=1">MEN (DEAD SOULS)</a>

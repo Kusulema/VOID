@@ -48,7 +48,8 @@
 
         .cult-form-container {
             max-width: 500px;
-            margin: 0 auto;
+            margin: 50px auto 0;
+            padding-top: 10px;
             animation: fadeIn .6s ease-out forwards;
             opacity: 0;
             animation-delay: 1.8s;
@@ -58,10 +59,57 @@
             to { opacity: 1; }
         }
 
-        .cult-input {
+        html, body {
+            min-height: 100%;
+            height: 100%;
+        }
+
+        body {
             background: #050505;
-            border: 1px solid #300;
-            color: #ff1a1a;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 12px;
+        }
+
+        .divBox {
+            width: min(100%, 760px);
+        }
+
+        .auth-switch {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .auth-switch__item {
+            color: #aaa;
+            text-decoration: none;
+            font-size: 0.82rem;
+            letter-spacing: 1.5px;
+            padding: 10px 18px;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            transition: .25s;
+        }
+
+        .auth-switch__item:hover,
+        .auth-switch__item.active {
+            color: #fff;
+            border-color: rgba(255,255,255,.18);
+            background: rgba(255,255,255,.06);
+        }
+
+        .cult-input {
+            background: #1f1f1f;
+            border: 1px solid #333;
+            color: #fff;
             padding: 15px;
             margin-bottom: 20px;
             width: 100%;
@@ -90,6 +138,25 @@
             font-size: 0.7rem;
             margin-top: 20px;
             letter-spacing: 2px;
+        }
+
+        .terminal-link {
+            display: inline-block;
+            color: #ff8a8a;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.14);
+            padding: 8px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-size: .8rem;
+            letter-spacing: 1.5px;
+            transition: .25s;
+        }
+
+        .terminal-link:hover {
+            color: #fff;
+            background: rgba(255,255,255,.14);
+            border-color: rgba(255,255,255,.25);
         }
 
         .error-box {
@@ -121,6 +188,10 @@
         </div>
 
         <div class="cult-form-container">
+            <div class="auth-switch">
+                <a class="auth-switch__item active" href="login">[ SIGN IN ]</a>
+                <a class="auth-switch__item" href="registerForm">[ SIGN UP ]</a>
+            </div>
             <form method="POST" action="login">
                 <div class="form-group">
                     <label class="form-label">EMAIL</label>
@@ -144,14 +215,9 @@
                     [ AUTHENTICATION UNLOCKS THE CABINET ]
                 </div>
 
-                <p style="padding-top:20px; text-align:center;">
-                    <a href="registerForm" style="color:#555;text-decoration:none;font-size:.75rem;">
-                        [ CREATE PROFILE ]
-                    </a>
-                </p>
 
                 <p style="text-align:center;">
-                    <a href="./" style="color:#555;text-decoration:none;font-size:.75rem;">
+                    <a class="terminal-link" href="./">
                         [ RETURN TO MAIN TERMINAL ]
                     </a>
                 </p>
