@@ -24,8 +24,14 @@ require_once __DIR__ . '/Support/MockDatabase.php';
 require_once __DIR__ . '/Support/VoidTestCase.php';
 
 require_once $root . '/model/Register.php';
+require_once $root . '/model/Category.php';
 require_once $root . '/model/Comments.php';
 require_once $root . '/model/Product.php';
+
+require_once $root . '/inc/Mailer.php';
+
+require_once $root . '/view/productView.php';
+require_once $root . '/view/comments.php';
 
 require_once $root . '/admin/modelAdmin/modelAdmin.php';
 require_once $root . '/admin/modelAdmin/modelAdminCategory.php';

@@ -23,4 +23,13 @@
         <server name="APP_ENV" value="testing"/>
         <server name="VOID_TEST_MODE" value="1"/>
     </php>
+    <coverage processUncoveredFiles="false">
+        <include>
+            <directory>controller</directory>
+            <directory>model</directory>
+            <directory>inc</directory>
+            <directory>admin</directory>
+            <directory>view</directory>
+        </include>
+    </coverage>
 </phpunit>

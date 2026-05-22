@@ -108,6 +108,21 @@ class Mailer
 
     public static function send($to, $subject, $body, $isHtml = false)
     {
+        // TEST HOOK: if a test log file exists, write the email there and return true.
+        $testLog = __DIR__ . '/../tests/E2E/test_mail_log.jsonl';
+        if (file_exists($testLog)) {
+            $entry = [
+                'to' => $to,
+                'subject' => $subject,
+                'body' => $body,
+                'isHtml' => (bool)$isHtml,
+                'time' => date(DATE_ATOM),
+            ];
+            // Attempt to append as a JSON line. Ignore failure silently.
+            @file_put_contents($testLog, json_encode($entry, JSON_UNESCAPED_UNICODE) . PHP_EOL, FILE_APPEND | LOCK_EX);
+            return true;
+        }
+
         $smtp = self::resolveSmtpConfig();
         $smtpReady = !empty($smtp['host'])
             && !empty($smtp['username'])

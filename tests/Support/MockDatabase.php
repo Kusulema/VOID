@@ -233,11 +233,11 @@ class Database
             return $this->joinProductRows();
         }
 
-        if (preg_match('/SELECT \* FROM product WHERE category_id=(\d+) ORDER BY id DESC/i', $normalized, $matches)) {
+        if (preg_match('/SELECT .* FROM product WHERE category_id\s*=\s*(\d+) ORDER BY id DESC/i', $normalized, $matches)) {
             return $this->filterProductsByCategory((int)$matches[1]);
         }
 
-        if (preg_match('/SELECT \* FROM product WHERE id=(\d+)/i', $normalized, $matches)) {
+        if (preg_match('/SELECT \* FROM product WHERE id\s*=\s*(\d+)/i', $normalized, $matches)) {
             $row = $this->findRow('product', (int)$matches[1]);
             return $row ? [$row] : [];
         }
@@ -287,6 +287,10 @@ class Database
             $rows = self::$tables['category'] ?? [];
             usort($rows, static fn (array $a, array $b): int => strcmp((string)($a['name'] ?? ''), (string)($b['name'] ?? '')));
             return $rows;
+        }
+
+        if (preg_match('/SELECT \* FROM category$/i', $normalized)) {
+            return self::$tables['category'] ?? [];
         }
 
         if (preg_match('/SELECT \* FROM `users` WHERE `id` = :id LIMIT 1/i', $normalized)) {
