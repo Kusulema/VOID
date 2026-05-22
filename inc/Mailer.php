@@ -14,8 +14,50 @@ class Mailer
         ],
     ];
 
+    private static function loadDotenvIfAvailable()
+    {
+        // If Composer autoload and phpdotenv are available, load .env into getenv()
+        $autoload = __DIR__ . '/../vendor/autoload.php';
+        if (file_exists($autoload)) {
+            require_once $autoload;
+            if (class_exists('Dotenv\\Dotenv')) {
+                try {
+                    $dot = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+                    $dot->load();
+                } catch (Throwable $e) {
+                    // ignore dotenv errors and continue to getenv()
+                }
+            }
+        }
+    }
+
+    private static function readEnv(string $name): string
+    {
+        $value = getenv($name);
+        if ($value !== false && $value !== '') {
+            return (string) $value;
+        }
+
+        if (isset($_ENV[$name]) && $_ENV[$name] !== '') {
+            return (string) $_ENV[$name];
+        }
+
+        if (isset($_SERVER[$name]) && $_SERVER[$name] !== '') {
+            return (string) $_SERVER[$name];
+        }
+
+        return '';
+    }
+
+    public static function bootstrapEnv()
+    {
+        self::loadDotenvIfAvailable();
+    }
+
     private static function resolveSmtpConfig()
     {
+        self::loadDotenvIfAvailable();
+
         $config = self::$smtp;
         $provider = strtolower((string)($config['provider'] ?? 'custom'));
 
@@ -45,8 +87,8 @@ class Mailer
         ];
 
         foreach ($envMap as $key => $envName) {
-            $value = getenv($envName);
-            if ($value !== false && $value !== '') {
+            $value = self::readEnv($envName);
+            if ($value !== '') {
                 if ($key === 'from_email') {
                     $config['from']['email'] = $value;
                 } elseif ($key === 'from_name') {

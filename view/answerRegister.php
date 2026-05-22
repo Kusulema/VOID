@@ -7,7 +7,7 @@ if(isset($result)) {
         ?>
             <div class="container">
                 <div class="alert alert-info">
-                    <strong>Пользователь добавлен.</strong> Теперь можно войти в личный кабинет. <a href="login">Войти</a>
+                    <strong>User created.</strong> You can now sign in to your account. <a href="login">Sign in</a>
                 </div>
             </div>
             <?php
@@ -17,7 +17,7 @@ if(isset($result)) {
         ?>
         <div class="container">
             <div class="alert alert-warning">
-                <strong>Ошибка!</strong> <?php echo $result[1];?><a href="registerForm">Форма регистрации</a>
+                <strong>Error!</strong> <?php echo $result[1];?><a href="registerForm">Registration form</a>
             </div>
         </div>
     <?php

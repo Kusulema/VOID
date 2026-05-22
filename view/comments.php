@@ -1,13 +1,14 @@
 <?php
 class ViewComments{
-    public static function CommentsForm(){
+    public static function CommentsForm($newsId = 0){
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
         if (empty($_SESSION['userId'])) {
             echo '<p>Please <a href="login">sign in</a> to leave a comment.</p>';
             return;
         }
-        echo '<form action="insertcomment">
-        <input type="hidden" name="id" value="'.htmlspecialchars($_GET['id'] ?? '').'">
+        $newsId = (int)$newsId;
+        echo '<form method="POST" action="insertcomment">
+        <input type="hidden" name="id" value="'.htmlspecialchars((string)$newsId).'">
             Write your comment: <input type="text" name="comment">
         <input class="submitBtn" type="submit" value="Send"> </form>';
     }

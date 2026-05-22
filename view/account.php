@@ -28,9 +28,9 @@ if ($isLoggedIn) {
     $displayJoined = $currentUser['registration_date'] ?? '—';
     $rawGender = $currentUser['gender'] ?? ($_SESSION['gender'] ?? 'unspecified');
     $genderMap = [
-        'male' => 'Male / Мужской',
-        'female' => 'Female / Женский',
-        'other' => 'Other / Другое',
+        'male' => 'Male',
+        'female' => 'Female',
+        'other' => 'Other',
         'unspecified' => 'Not set',
     ];
     $displayGender = $genderMap[$rawGender] ?? ucfirst((string) $rawGender);
@@ -192,7 +192,7 @@ if ($isLoggedIn) {
                                             <p class="price"><?php echo htmlspecialchars($wish['price'] ?? '—'); ?> €</p>
                                         </div>
                                     </a>
-                                    <a href="wishlist?id=<?php echo (int)$wish['id']; ?>&action=remove" class="wishlist-remove" title="Remove">-</a>
+                                    <a href="wishlist?id=<?php echo (int)$wish['id']; ?>&action=remove" class="wishlist-remove" data-wishlist-remove title="Remove">-</a>
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -237,6 +237,28 @@ if ($isLoggedIn) {
             const openButton = event.target.closest('[data-popup-open]');
             const closeButton = event.target.closest('[data-popup-close]');
             const popupBackdrop = event.target.closest('.newsletter-popup');
+
+            const wishlistRemove = event.target.closest('[data-wishlist-remove]');
+            if (wishlistRemove) {
+                event.preventDefault();
+                event.stopPropagation();
+                const href = wishlistRemove.getAttribute('href');
+                const card = wishlistRemove.closest('.wishlist-card');
+                if (href) {
+                    fetch(href, { credentials: 'same-origin' }).catch(function() {});
+                }
+                if (card) {
+                    card.remove();
+                }
+                const grid = document.querySelector('#wishlistPopup .wishlist-grid');
+                if (grid && !grid.querySelector('.wishlist-card')) {
+                    const empty = document.createElement('div');
+                    empty.className = 'account-copy';
+                    empty.textContent = 'No items yet. Save products with the heart and return to them later.';
+                    grid.replaceWith(empty);
+                }
+                return;
+            }
 
             if (openButton) {
                 const popupId = openButton.getAttribute('data-popup-open');

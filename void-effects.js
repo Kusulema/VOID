@@ -73,13 +73,10 @@ const renderCart = () => {
         row.className = 'cart-item';
         row.innerHTML = `
             <div>
-                <strong>${escapeHtml(item.title)}</strong>
+                <strong>${item.title}</strong>
                 <span class="account-copy">Qty ${item.qty}</span>
             </div>
-            <div class="cart-item-actions">
-                <span class="release-price">${price ? price.toFixed(2) + ' €' : '—'}</span>
-                <button type="button" class="ghost-btn cart-remove-btn" data-remove-item="${escapeHtml(item.id)}" aria-label="Remove one item">-1</button>
-            </div>
+            <div class="release-price">${price ? price.toFixed(2) + ' €' : '—'}</div>
         `;
         cartList.appendChild(row);
     });
@@ -225,6 +222,10 @@ const initReviewCarousel = () => {
 
     if (form) {
         form.addEventListener('submit', (event) => {
+            if ((form.getAttribute('action') || '').indexOf('insertcomment') !== -1) {
+                return;
+            }
+
             event.preventDefault();
 
             const text = textInput ? textInput.value.trim() : '';
@@ -254,31 +255,55 @@ const initReviewCarousel = () => {
     restartAuto();
 };
 
-const openPopup = () => {
-    const popup = document.getElementById('newsletterPopup');
+const setPopupState = (popup, isOpen) => {
     if (!popup) {
         return;
     }
 
-    if (popup.parentElement !== document.documentElement) {
+    if (isOpen && popup.parentElement !== document.documentElement) {
         document.documentElement.appendChild(popup);
     }
 
-    popup.classList.add('is-open');
-    popup.setAttribute('aria-hidden', 'false');
+    popup.classList.toggle('is-open', isOpen);
+    popup.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    document.documentElement.classList.toggle('modal-scroll-lock', isOpen);
+    document.body.classList.toggle('modal-scroll-lock', isOpen);
+};
+
+const openPopup = (popupId = 'newsletterPopup') => {
+    setPopupState(document.getElementById(popupId), true);
+};
+
+const closePopup = (popup) => {
+    const targetPopup = popup || document.getElementById('newsletterPopup');
+    setPopupState(targetPopup, false);
+    if (targetPopup && targetPopup.id === 'newsletterPopup') {
+        sessionStorage.setItem('voidNewsletterSeenHome', '1');
+    }
+};
+
+const isSignedIn = () => Boolean(document.body && document.body.dataset && document.body.dataset.userId);
+
+const openAuthModal = () => {
+    const modal = document.getElementById('authRequiredModal');
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
     document.documentElement.classList.add('modal-scroll-lock');
     document.body.classList.add('modal-scroll-lock');
 };
 
-const closePopup = () => {
-    const popup = document.getElementById('newsletterPopup');
-    if (!popup) {
+const closeAuthModal = () => {
+    const modal = document.getElementById('authRequiredModal');
+    if (!modal) {
         return;
     }
 
-    popup.classList.remove('is-open');
-    popup.setAttribute('aria-hidden', 'true');
-    sessionStorage.setItem('voidNewsletterClosed', '1');
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
     document.documentElement.classList.remove('modal-scroll-lock');
     document.body.classList.remove('modal-scroll-lock');
 };
@@ -298,31 +323,12 @@ document.addEventListener('click', (event) => {
         return;
     }
 
-    const removeButton = event.target.closest('[data-remove-item]');
-    if (removeButton) {
-        event.preventDefault();
-        const itemId = removeButton.dataset.removeItem;
-        const cart = getCart();
-        const existing = cart.find((entry) => entry.id === itemId);
-        if (existing) {
-            existing.qty -= 1;
-            if (existing.qty <= 0) {
-                const index = cart.findIndex((entry) => entry.id === itemId);
-                if (index !== -1) {
-                    cart.splice(index, 1);
-                }
-            }
-        }
-
-        setCart(cart);
-        updateCartBadge();
-        renderCart();
-        playClick();
-        return;
-    }
-
     if (addToCartButton) {
         event.preventDefault();
+        if (!isSignedIn()) {
+            openAuthModal();
+            return;
+        }
         const item = {
             id: addToCartButton.dataset.id,
             title: addToCartButton.dataset.title,
@@ -346,12 +352,12 @@ document.addEventListener('click', (event) => {
     }
 
     if (popupClose) {
-        closePopup();
+        closePopup(popupClose.closest('.newsletter-popup'));
         return;
     }
 
     if (event.target.classList && event.target.classList.contains('newsletter-popup')) {
-        closePopup();
+        closePopup(event.target);
         return;
     }
 
@@ -367,6 +373,10 @@ document.addEventListener('click', (event) => {
     }
 
     event.preventDefault();
+    if (!isSignedIn()) {
+        openAuthModal();
+        return;
+    }
 
     const url = heartLink.href;
     if (!url) {
@@ -422,8 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('cultForm');
     const cursor = document.querySelector('.init-cursor');
     const newsletterPopup = document.getElementById('newsletterPopup');
-
-    sessionStorage.removeItem('voidNewsletterClosed');
+    const isHomePage = document.body && document.body.dataset && document.body.dataset.page === 'home';
 
     if (cursor && form) {
         setTimeout(() => {
@@ -432,12 +441,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3600);
     }
 
-    if (newsletterPopup && !sessionStorage.getItem('voidNewsletterClosed')) {
+    if (newsletterPopup && isHomePage && !sessionStorage.getItem('voidNewsletterSeenHome')) {
         setTimeout(() => {
-            if (!sessionStorage.getItem('voidNewsletterClosed')) {
-                openPopup();
+            if (!sessionStorage.getItem('voidNewsletterSeenHome')) {
+                openPopup('newsletterPopup');
             }
-        }, 10000);
+        }, 8000);
     }
 
     updateCartBadge();
@@ -447,21 +456,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.addEventListener('submit', (event) => {
     const form = event.target;
-    if (!form || !form.querySelector('input[type="password"]')) {
+    if (!form || !form.classList || !form.classList.contains('newsletter-form')) {
         return;
     }
 
-    const emailText = [
-        'Subject: You have rooted yourself in this dirt.',
-        'Preheader: Rust devours everything except us.',
-        '',
-        'Your e-mail has been successfully consumed.',
-        '',
-        'You are now subscribed to the chronicle of our filth.',
-        'No welcome bonuses for weaklings — only raw, unfiltered content and early access to what others will see too late.',
-        'We will brand your inbox when the next drop is due. Keep your eyes open.',
-        '',
-        '[ JOIN THE NETWORK ]'
-    ].join('\n');
-    alert(emailText);
+    // Alert removed - success feedback now shown via redirect to answerNewsletter.php
 });

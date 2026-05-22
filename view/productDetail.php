@@ -6,8 +6,6 @@ ob_start();
 ViewProduct::ReadProduct($product); // Было ViewNews::ReadNews($n)
 
 echo "<br>";
-// Если ты убрал комментарии, эту строку можно удалить:
-// Controller::Comments($_GET['id']); 
 ?>
 
 <?php

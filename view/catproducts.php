@@ -1,7 +1,7 @@
 <?php
 ob_start();
 ?>
-<h1>Товары по категориям</h1>
+<h1>Products by category</h1>
 <br>
 <div class="newsContainer">
 <?php

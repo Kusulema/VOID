@@ -1,5 +1,15 @@
 <?php
+/**
+ * Main application controller — handles public site routes and actions.
+ *
+ * Methods are static and primarily include controllers for pages,
+ * forms and AJAX endpoints such as placing orders or inserting comments.
+ */
 class Controller {
+    /**
+     * Show home page with latest products and recent comments.
+     * Loads `view/start.php`.
+     */
     public static function StartSite() {
         $currentUser = isset($_SESSION['userId']) ? Register::getCurrentUser() : null;
         $arr = Product::getLastProducts($currentUser);
@@ -9,42 +19,71 @@ class Controller {
         include_once 'view/start.php';
     }
 
+    /**
+     * Show list of all categories.
+     */
     public static function AllCategory() {
         $arr = Category::getAllCategory();
         include_once 'view/category.php';
     }
     
 
+    /**
+     * Show list of all products. Passes current user to product loader
+     * so personalized data (wishlist flags) can be resolved.
+     */
     public static function AllProducts() {
         $currentUser = isset($_SESSION['userId']) ? Register::getCurrentUser() : null;
         $arr = Product::getAllProducts($currentUser);
         include_once 'view/allproducts.php'; 
     }
 
+    /**
+     * Show products filtered by category id.
+     * @param int $id Category identifier
+     */
     public static function ProductByCatID($id) {
         $arr = Product::getProductsByCategoryID($id);
         include_once 'view/catproducts.php';
     }
 
+    /**
+     * Show detail page for a single product by id.
+     * @param int $id Product identifier
+     */
     public static function ProductByID($id) {
         $product = Product::getProductByID($id);
+        $comments = Comments::getCommentByNewsID($id);
         include_once 'view/productDetail.php';
     }
 
+    /**
+     * Render 404 error page.
+     */
     public static function error404() {
         include_once 'view/error404.php';
     }
 
-    // Методы регистрации (которые вызывали ошибку)
+    // Registration methods
+    /**
+     * Show registration form.
+     */
     public static function registerForm() {
         include_once 'view/formRegister.php';
     }
 
+    /**
+     * Handle registration POST and display result.
+     */
     public static function registerUser() {
         $result = Register::registerUser();
         include_once 'view/answerRegister.php';
     }
 
+    /**
+     * Subscribe a user to the newsletter (expects POST with `email`).
+     * Validates email and sends a mail using `inc/Mailer.php`.
+     */
     public static function NewsletterSubscribe() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ./');
@@ -78,32 +117,52 @@ class Controller {
         include_once 'view/answerNewsletter.php';
     }
 
+    /**
+     * Handle login form (GET shows form, POST attempts authentication).
+     */
     public static function loginAction() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = Register::loginUser();
             if ($result[0] === true) {
                 $currentUser = Register::getCurrentUser();
+                // Redirect to 'next' if provided
+                $next = trim((string)($_GET['next'] ?? ''));
+                if ($next !== '') {
+                    header('Location: ' . $next);
+                    exit;
+                }
                 $pageClass = 'inner-page account-page';
                 include_once 'view/account.php';
                 return;
             }
 
-            $errorString = $result[1] ?? 'Неправильный email или пароль';
+            $errorString = $result[1] ?? 'Incorrect email or password';
         }
 
         include_once 'view/formLogin.php';
     }
 
+    /**
+     * Log out current user and show login form.
+     */
     public static function logoutAction() {
         Register::logoutUser();
         include_once 'view/formLogin.php';
     }
 
+    /**
+     * Display shopping cart page.
+     */
     public static function Cart() {
         $pageClass = 'inner-page cart-page';
         include_once 'view/cart.php';
     }
 
+    /**
+     * Toggle or remove item from user's wishlist. Redirects back.
+     * @param int $productId
+     * @param string $action 'toggle' or 'remove'
+     */
     public static function WishlistAction($productId, $action = 'toggle') {
         if (isset($_SESSION['userId'])) {
             if ($action === 'toggle') {
@@ -121,6 +180,9 @@ class Controller {
         exit;
     }
 
+    /**
+     * Show and update account/profile page. Also loads wishlist items.
+     */
     public static function Account() {
         $profileMessage = '';
         $profileError = '';
@@ -145,8 +207,17 @@ class Controller {
         include_once 'view/account.php';
     }
 
+    /**
+     * Insert a comment provided via POST or GET (minimal anti-spam checks).
+     */
     public static function InsertComment() {
-        if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id']) && isset($_GET['comment'])) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST['comment'])) {
+            $id = (int)$_POST['id'];
+            $text = trim($_POST['comment']);
+            if ($text !== '') {
+                Comments::insertComment($text, $id);
+            }
+        } elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id']) && isset($_GET['comment'])) {
             $id = (int)$_GET['id'];
             $text = trim($_GET['comment']);
             if ($text !== '') {
@@ -158,11 +229,18 @@ class Controller {
         exit;
     }
 
+    /**
+     * List recent reviews/comments.
+     */
     public static function Reviews() {
         $reviews = Comments::getLatestComments(12);
         $pageClass = 'inner-page reviews-page';
         include_once 'view/reviews.php';
     }
+    /**
+     * AJAX endpoint to place an order. Expects JSON payload with items and total.
+     * Validates profile completeness and sends emails to user and admin.
+     */
     public static function PlaceOrder() {
         // Expect JSON POST with items and total
         header('Content-Type: application/json');
@@ -205,12 +283,17 @@ class Controller {
         }
 
         require_once __DIR__ . '/../inc/Mailer.php';
+        Mailer::bootstrapEnv();
         $userSubject = '[THE VOID] The fruit is ripe. Your new skin is drying on rusted hooks.';
+        $orderLinesHtml = '<ul>'; foreach ($lines as $ln) { $orderLinesHtml .= '<li>' . htmlspecialchars($ln) . '</li>'; } $orderLinesHtml .= '</ul>';
+
         $userBody = "We heard your breath. The pact with the Void is sealed with a drop of Lymph.\n\n"
-            . "Your order has been accepted. Your new shell has already been torn from the bone, washed in sweat, and dried among rusted industrial gears. Our Sisters are already wrapping it in coarse cloth to protect it from the spreading mold on its way to your Chamber.\n\n"
+            . "Your order has been accepted and is being prepared. Below is the summary of items you ordered:\n\n"
+            . implode("\n", $lines) . "\n\n"
+            . "Order total: " . number_format((float)$total, 2) . " €\n\n"
             . "Flesh Status: Preparing for separation (Order packing).\n"
-            . "Breach Coordinates: Your shipping address.\n\n"
-            . "Soon we will send you a tracking code - a thread to help you feel your package through the fog. Do not let your Heart wither before it arrives.\n\n"
+            . "Breach Coordinates: " . ($currentUser['address'] ?? 'No address provided') . "\n\n"
+            . "Soon we will send you a tracking code.\n\n"
             . "Stay in the dark. The mold needs warmth.";
 
         $adminBody = "New order received:\n\n"
@@ -220,8 +303,15 @@ class Controller {
             . "Total: " . number_format((float)$total, 2) . " €\n\n"
             . "Items:\n" . implode("\n", $lines);
 
-        $userMailSent = Mailer::send($currentUser['email'] ?? '', $userSubject, nl2br(htmlspecialchars($userBody)), true);
-        $adminMailSent = Mailer::send('admin@void.com', 'New order from ' . ($currentUser['email'] ?? 'unknown'), nl2br(htmlspecialchars($adminBody)), true);
+        $userMailSent = false;
+        if (!empty($currentUser['email'])) {
+            $userMailSent = Mailer::send($currentUser['email'], $userSubject, nl2br($userBody), true);
+        }
+        $orderNotifyTo = (getenv('VOID_MAIL_ORDER_TO') ?: ($_ENV['VOID_MAIL_ORDER_TO'] ?? '') ?: ($_SERVER['VOID_MAIL_ORDER_TO'] ?? ''));
+        if ($orderNotifyTo === '') {
+            $orderNotifyTo = (getenv('VOID_MAIL_ADMIN_TO') ?: ($_ENV['VOID_MAIL_ADMIN_TO'] ?? '') ?: ($_SERVER['VOID_MAIL_ADMIN_TO'] ?? '') ?: 'admin@void.com');
+        }
+        $adminMailSent = Mailer::send($orderNotifyTo, 'New order from ' . ($currentUser['email'] ?? 'unknown'), nl2br(htmlspecialchars($adminBody)), true);
 
         if ($userMailSent && $adminMailSent) {
             echo json_encode(['success' => true]);

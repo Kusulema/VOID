@@ -1,5 +1,15 @@
 <?php
+/**
+ * Register model - user registration, authentication and profile management.
+ * Includes basic payment/profile validation and wishlist utilities.
+ */
 class Register{
+    /**
+     * Validate payment-related fields and normalize values.
+     * Returns [isValid, errorsArray, normalizedData]
+     * @param array $data
+     * @return array
+     */
     private static function validatePaymentFields(array $data) {
         $errors = [];
         $normalized = $data;
@@ -55,10 +65,18 @@ class Register{
         return [empty($errors), $errors, $normalized];
     }
 
+    /**
+     * Public wrapper used before placing orders to ensure profile completeness.
+     */
     public static function validateProfileForOrder(array $user) {
         return self::validatePaymentFields($user);
     }
 
+    /**
+     * Handle user registration from POSTed form data.
+     * Validates fields, hashes password and inserts user record using Database.
+     * Returns [bool_success, message_or_errors]
+     */
     public static function registerUser() {
         $controll=array(0=>false,1=>'error');
         if (isset($_POST['save'])) {
@@ -67,23 +85,23 @@ class Register{
             $gender = trim($_POST['gender'] ?? 'unspecified');
             $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
             if (!$email) {
-                $errorString.="Неправильный email<br>";
+                $errorString.="Invalid email<br>";
             }
             if ($name === '') {
-                $errorString.="Имя не может быть пустым<br>";
+                $errorString.="Name cannot be empty<br>";
             }
             $allowedGenders = ['male', 'female', 'other', 'unspecified'];
             if (!in_array($gender, $allowedGenders, true)) {
-                $errorString.="Некорректный пол пользователя<br>";
+                $errorString.="Invalid gender value<br>";
             }
             $password = $_POST['password'];
             $confirm = $_POST['confirm'];
             if (!$password || !$confirm || mb_strlen($password) < 6) {
-                $errorString.="Пароль должен быть больше 6 символов <br>";
+                $errorString.="Password must be longer than 6 characters <br>";
             }
 
             if ($password != $confirm) {
-                $errorString.="Пароли не совпадают<br>";
+                $errorString.="Passwords do not match<br>";
             }
             if (mb_strlen($errorString)==0 ) {
                 $passwordHash = password_hash($_POST['password'], PASSWORD_DEFAULT);
@@ -187,6 +205,10 @@ class Register{
         return $controll;
     }
 
+    /**
+     * Authenticate user by email (or login if available) and password.
+     * On success, populates session variables and returns [true, userData].
+     */
     public static function loginUser() {
         $result = array(0=>false,1=>'error');
         if (isset($_POST['btnLogin'])) {
@@ -194,7 +216,7 @@ class Register{
             $password = $_POST['password'] ?? '';
 
             if (!$email || $password === '') {
-                return array(0=>false,1=>'Введите email и пароль');
+                return array(0=>false,1=>'Enter your email and password');
             }
 
             $db = new Database();
@@ -220,12 +242,15 @@ class Register{
                 }
             }
 
-            return array(0=>false,1=>'Неправильный email или пароль');
+            return array(0=>false,1=>'Incorrect email or password');
         }
 
         return $result;
     }
 
+    /**
+     * Clear user session and logout.
+     */
     public static function logoutUser() {
         unset($_SESSION['sessionId']);
         unset($_SESSION['userId']);
@@ -237,6 +262,11 @@ class Register{
         return;
     }
 
+    /**
+     * Load current user data from DB based on session userId.
+     * Also refreshes session wishlist field.
+     * @return array|null
+     */
     public static function getCurrentUser() {
         if (!isset($_SESSION['userId'])) {
             return null;
@@ -250,6 +280,10 @@ class Register{
         return $user;
     }
 
+    /**
+     * Update profile/payment fields for current user. Ensures database columns exist.
+     * Returns [success, message].
+     */
     public static function updateProfile() {
         if (!isset($_SESSION['userId'])) {
             return [0 => false, 1 => 'User session not found'];
@@ -353,6 +387,11 @@ class Register{
         return [0 => false, 1 => 'Failed to update profile.'];
     }
 
+    /**
+     * Return normalized wishlist ids array for a given user or current session.
+     * @param array|null $user
+     * @return int[]
+     */
     public static function getWishlistIds($user = null) {
         $wishlist = [];
         if (is_array($user) && isset($user['wishlist'])) {
@@ -366,6 +405,12 @@ class Register{
         return array_map('intval', array_values(array_unique($wishlist)));
     }
 
+    /**
+     * Toggle product id in current user's wishlist. Ensures `wishlist` column exists.
+     * Returns updated wishlist array.
+     * @param int $productId
+     * @return array
+     */
     public static function toggleWishlistItem($productId) {
         if (!isset($_SESSION['userId'])) {
             return false;

@@ -12,7 +12,9 @@ if (!isset($languages) || !is_array($languages)) {
     include_once __DIR__ . '/../inc/languages.php';
 }
 $languages = isset($languages) && is_array($languages) ? $languages : [];
-$langCode = $_SESSION['lang'] ?? 'en';
+$allowedLangs = ['en','ru','et'];
+// URL governs language state. If ?lang is absent, default to English.
+$langCode = (!empty($_GET['lang']) && in_array($_GET['lang'], $allowedLangs, true)) ? $_GET['lang'] : 'en';
 $langFallback = ['en', 'et', 'ru'];
 if (!isset($languages[$langCode])) {
     $langCode = in_array('en', array_keys($languages), true)
@@ -24,8 +26,21 @@ $tt = static function ($key, $fallback = '') use ($tr) {
     return $tr[$key] ?? $fallback;
 };
 $isHomePage = isset($pageClass) && strpos($pageClass, 'home') !== false;
+$parsedUrl = parse_url($_SERVER['REQUEST_URI'] ?? './');
+$langQuery = [];
+if (!empty($parsedUrl['query'])) {
+    parse_str($parsedUrl['query'], $langQuery);
+}
+$langPath = $parsedUrl['path'] ?? './';
+$buildLangHref = static function (string $code) use ($langPath, $langQuery): string {
+    $query = $langQuery;
+    $query['lang'] = $code;
+    $queryString = http_build_query($query);
+    return $langPath . ($queryString !== '' ? '?' . $queryString : '');
+};
+$bodyUserId = !empty($_SESSION['userId']) ? (string)$_SESSION['userId'] : '';
 ?>
-<body class="industrial-body <?php echo isset($pageClass) ? htmlspecialchars($pageClass) : ''; ?>" data-page="<?php echo isset($pageClass) && strpos($pageClass, 'home') !== false ? 'home' : 'inner'; ?>">
+<body class="industrial-body <?php echo isset($pageClass) ? htmlspecialchars($pageClass) : ''; ?>" data-page="<?php echo isset($pageClass) && strpos($pageClass, 'home') !== false ? 'home' : 'inner'; ?>" data-user-id="<?php echo htmlspecialchars($bodyUserId); ?>">
 <div class="void-scope">
 <nav class="one navbar navbar-expand-lg">
     <div class="container-fluid nav-shell">
@@ -33,9 +48,9 @@ $isHomePage = isset($pageClass) && strpos($pageClass, 'home') !== false;
         <div class="nav-left-stack">
             <a class="nav-link cult-main brand-link nav-hero nav-hover-text" href="./">THE VOID</a>
             <div class="lang-under-brand">
-                <a class="lang-link text-glow<?php echo $langCode === 'ru' ? ' active' : ''; ?>" href="?lang=ru">RU</a>
-                <a class="lang-link text-glow<?php echo $langCode === 'en' ? ' active' : ''; ?>" href="?lang=en">EN</a>
-                <a class="lang-link text-glow<?php echo $langCode === 'et' ? ' active' : ''; ?>" href="?lang=et">ET</a>
+                <a class="lang-link text-glow" data-lang="ru" href="<?php echo htmlspecialchars($buildLangHref('ru')); ?>" onclick="(function(e){e.preventDefault();var L=document.querySelectorAll('.lang-link');for(var i=0;i<L.length;i++){L[i].classList.remove('active');}this.classList.add('active');window.location=this.href;})(event)">RU</a>
+                <a class="lang-link text-glow" data-lang="en" href="<?php echo htmlspecialchars($buildLangHref('en')); ?>" onclick="(function(e){e.preventDefault();var L=document.querySelectorAll('.lang-link');for(var i=0;i<L.length;i++){L[i].classList.remove('active');}this.classList.add('active');window.location=this.href;})(event)">EN</a>
+                <a class="lang-link text-glow" data-lang="et" href="<?php echo htmlspecialchars($buildLangHref('et')); ?>" onclick="(function(e){e.preventDefault();var L=document.querySelectorAll('.lang-link');for(var i=0;i<L.length;i++){L[i].classList.remove('active');}this.classList.add('active');window.location=this.href;})(event)">ET</a>
             </div>
         </div>
 
@@ -128,7 +143,91 @@ $isHomePage = isset($pageClass) && strpos($pageClass, 'home') !== false;
 <div class="crt-overlay"></div>
 <div class="screen-glitch"></div>
 
+<div class="newsletter-popup auth-popup" id="authRequiredModal" aria-hidden="true">
+    <div class="newsletter-backdrop" data-popup-close></div>
+    <div class="newsletter-modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="authRequiredTitle">
+        <button class="popup-close" type="button" data-popup-close aria-label="Close popup">×</button>
+        <div class="newsletter-copy">
+            <p class="eyebrow">You must sign in</p>
+            <h2 id="authRequiredTitle">Please sign in to continue</h2>
+            <p>
+                To add items to your wishlist or place orders you must be signed in. Please log in or register to continue.
+            </p>
+            <div class="card-actions">
+                <a class="submitBtn" href="login">Sign in</a>
+                <a class="ghost-btn" href="registerForm">Register</a>
+            </div>
+        </div>
+        <div class="newsletter-visual profile-visual auth-visual" aria-hidden="true">
+            <div class="profile-photo" style="background-image: url('img/void9.jpg');"></div>
+            <div class="profile-chain" style="background-image: url('img/rustychain.png');"></div>
+        </div>
+    </div>
+</div>
+
 <script src="void-effects.js?v=<?php echo time(); ?>"></script>
+<script>
+// Ensure language buttons reflect server-side language immediately and update on click
+(function(){
+    try {
+        var serverLang = <?php echo json_encode($langCode); ?>;
+        var links = document.querySelectorAll('.lang-link');
+        links.forEach(function(l){ l.classList.remove('active'); });
+        var currentUrl = new URL(window.location.href);
+        var activeLang = currentUrl.searchParams.get('lang') || 'en';
+        var active = document.querySelector('.lang-link[data-lang="' + activeLang + '"]');
+        if (active) active.classList.add('active');
+        // Intercept language clicks: set active immediately, then navigate.
+        links.forEach(function(l){
+            l.addEventListener('click', function(e){
+                try { e.preventDefault(); e.stopImmediatePropagation(); } catch (er) {}
+                links.forEach(function(x){ x.classList.remove('active'); });
+                l.classList.add('active');
+                // navigate to href (preserves normal behavior but ensures active state first)
+                var href = l.href || l.getAttribute('href');
+                if (href) {
+                    window.location.href = href;
+                }
+            }, {passive:false});
+        });
+
+        // Preserve the chosen language across internal navigation links
+        var currentUrl = new URL(window.location.href);
+        var currentLang = currentUrl.searchParams.get('lang') || serverLang || 'en';
+        var keepLangOnLinks = function(anchor) {
+            if (!anchor || !anchor.getAttribute) return;
+            var href = anchor.getAttribute('href');
+            if (!href || href.indexOf('javascript:') === 0) return;
+            if (anchor.classList.contains('lang-link')) return;
+            if (href === '#' || href.indexOf('#') === 0) return;
+
+            var url;
+            try {
+                url = new URL(href, window.location.href);
+            } catch (e) {
+                return;
+            }
+
+            if (url.origin !== window.location.origin) return;
+            url.searchParams.set('lang', currentLang);
+            anchor.href = url.toString();
+        };
+
+        document.querySelectorAll('a[href]').forEach(keepLangOnLinks);
+
+        document.addEventListener('click', function(e){
+            var anchor = e.target.closest && e.target.closest('a[href]');
+            if (!anchor) return;
+            if (anchor.classList.contains('lang-link')) return;
+            var href = anchor.getAttribute('href');
+            if (!href || href === '#' || href.indexOf('#') === 0 || href.indexOf('javascript:') === 0) return;
+            keepLangOnLinks(anchor);
+        }, true);
+    } catch (e) {
+        // noop
+    }
+})();
+</script>
 </div>
 </body>
 </html>

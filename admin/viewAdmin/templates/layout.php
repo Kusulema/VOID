@@ -1,6 +1,6 @@
 <?php ob_start(); ?>
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -174,15 +174,9 @@ document.querySelectorAll('form').forEach(form=>{
         status.className='status-message status-hash';
         status.textContent='HASHING DATA...';
         setTimeout(()=>{
-            const success=Math.random()>0.3;
-            if(success){
-                status.className='status-message status-success';
-                status.textContent='ACCESS GRANTED';
-                form.submit();
-            } else {
-                status.className='status-message status-error glitch';
-                status.textContent='ACCESS DENIED';
-            }
+            status.className='status-message status-success';
+            status.textContent='ACCESS GRANTED';
+            form.submit();
         },1200);
     });
 });

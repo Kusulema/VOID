@@ -1,12 +1,18 @@
 <?php
 ob_start();
+$pageClass = 'inner-page all-products-page';
 ?>
-<h1>Все товары</h1>
-<br>
-<div class="newsContainer">
+<section class="section-block all-products-shell">
+	<div class="section-heading section-heading-center">
+		<p>Catalog</p>
+		<h2>All products</h2>
+		<p class="hero-lead" style="margin-left:auto;margin-right:auto;">The full collection, centered like the main hero and built for the same visual weight.</p>
+	</div>
+	<div class="newsContainer release-grid">
+		<?php ViewProduct::ProductsByCategory($arr); // Было ViewNews::AllNews ?>
+	</div>
+</section>
 <?php
-ViewProduct::ProductsByCategory($arr); // Было ViewNews::AllNews
 $content = ob_get_clean();
 include_once 'view/layout.php';
 ?>
-</div>

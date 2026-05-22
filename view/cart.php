@@ -9,6 +9,10 @@ $pageClass = 'inner-page cart-page';
         <div class="cart-hero">
             <h2>Your selection</h2>
             <p class="account-copy">A lightweight client-side cart with a real visual shell. Add products from the release cards and they will appear here instantly.</p>
+            <div class="cart-inline-actions">
+                <button type="button" class="submitBtn" onclick="localStorage.removeItem('voidCart'); window.location.reload();">Clear cart</button>
+                <button type="button" id="buyNowBtn" class="submitBtn">Buy now</button>
+            </div>
         </div>
 
         <div class="empty-state" data-cart-empty>
@@ -19,17 +23,19 @@ $pageClass = 'inner-page cart-page';
     </div>
 
     <aside class="cart-panel cart-summary">
-        <p class="cart-note">Quick summary</p>
+        <p class="cart-note">Cart</p>
         <h3>Total</h3>
         <div class="cart-total"><span data-cart-total>0.00</span> €</div>
-        <div class="account-copy" style="text-align:center;">
+        <div class="account-copy cart-summary-copy">
             Shipping and checkout can be wired in next. For now this keeps the shopping flow visible and usable.
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px;align-items:center;margin-top:12px;">
-            <a href="all" class="submitBtn">Continue shopping</a>
-            <a href="account" class="submitBtn">Open account</a>
-            <button type="button" id="buyNowBtn" class="submitBtn">Buy now</button>
-            <button type="button" class="submitBtn" onclick="localStorage.removeItem('voidCart'); window.location.reload();">Clear cart</button>
+        <div class="cart-actions-grid">
+            <div class="cart-actions-column">
+                <a href="all" class="submitBtn">Continue shopping</a>
+            </div>
+            <div class="cart-actions-column cart-actions-column-right">
+                <a href="account" class="submitBtn">Open account</a>
+            </div>
         </div>
     </aside>
 </section>
@@ -106,10 +112,14 @@ document.getElementById('buyNowBtn').addEventListener('click', function(){
         } else if (data && data.missingProfile) {
             openOrderWarning(data);
         } else {
-            alert((data && data.error) ? data.error : 'You must first fill all profile information fields in your profile.');
+            // Show error message in console instead of alert
+            console.error((data && data.error) ? data.error : 'You must first fill all profile information fields in your profile.');
+            openOrderWarning({error: (data && data.error) ? data.error : 'Please fill all profile information before checkout.'});
         }
     }).catch(function(){
-        alert('An error occurred while placing the order.');
+        // Show error message in console instead of alert
+        console.error('An error occurred while placing the order.');
+        openOrderWarning({error: 'An error occurred while placing the order. Please try again.'});
     });
 });
 </script>

@@ -5,10 +5,10 @@ ob_start()
     <div id="main" class="container">
         <h3>Admin Panel</h3>
         <div class="row">
-            <p>Admin panel</p>
+            <p>Administration dashboard</p>
             <ul>
-                <li><a href="productAdmin">Products</a></li>
-                <li><a href="commentsAdmin">Comments moderation</a></li>
+                <li><a href="index.php?path=productAdmin">Products</a></li>
+                <li><a href="index.php?path=commentsAdmin">Comments moderation</a></li>
             </ul>
         </div>
     </div>

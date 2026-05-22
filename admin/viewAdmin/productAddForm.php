@@ -16,6 +16,30 @@
                     <td><textarea name="description" class="form-control" rows="5" required></textarea></td>
                 </tr>
                 <tr>
+                    <td>Title EN</td>
+                    <td><input type="text" name="title_en" class="form-control" placeholder="Optional English title"></td>
+                </tr>
+                <tr>
+                    <td>Description EN</td>
+                    <td><textarea name="description_en" class="form-control" rows="4" placeholder="Optional English description"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Title RU</td>
+                    <td><input type="text" name="title_ru" class="form-control" placeholder="Optional Russian title"></td>
+                </tr>
+                <tr>
+                    <td>Description RU</td>
+                    <td><textarea name="description_ru" class="form-control" rows="4" placeholder="Optional Russian description"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Title ET</td>
+                    <td><input type="text" name="title_et" class="form-control" placeholder="Optional Estonian title"></td>
+                </tr>
+                <tr>
+                    <td>Description ET</td>
+                    <td><textarea name="description_et" class="form-control" rows="4" placeholder="Optional Estonian description"></textarea></td>
+                </tr>
+                <tr>
                     <td>Price (€)</td>
                     <td><input type="number" step="0.01" name="price" class="form-control" required></td>
                 </tr>

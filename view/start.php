@@ -6,7 +6,8 @@ if (!isset($languages) || !is_array($languages)) {
 	include_once __DIR__ . '/../inc/languages.php';
 }
 $languages = isset($languages) && is_array($languages) ? $languages : [];
-$langCode = $_SESSION['lang'] ?? 'en';
+$allowedLangs = ['en', 'ru', 'et'];
+$langCode = (!empty($_GET['lang']) && in_array($_GET['lang'], $allowedLangs, true)) ? $_GET['lang'] : 'en';
 if (!isset($languages[$langCode])) {
 	$langCode = isset($languages['en']) ? 'en' : (isset($languages['et']) ? 'et' : 'ru');
 }
@@ -154,22 +155,22 @@ $reviewCarouselItems = array_slice($reviewCarouselItems, 0, 6);
 		<div class="about-panel">
 			<h3>Brand direction</h3>
 			<p>
-				Sharp cuts, heavy contrast and a heavy editorial mood. The site now feels
-				like a proper brand space, not a product dump.
+				Tailored silhouettes, heavy outerwear and graphic layers designed for a dark
+				streetwear wardrobe.
 			</p>
 		</div>
 		<div class="about-panel">
-			<h3>Local energy</h3>
+			<h3>Delivery</h3>
 			<p>
-				We keep the experience direct: hero, drops, story, reviews, footer and the
-				support sections people actually expect.
+				Fast dispatch, careful packaging and clear delivery updates so every order
+				feels reliable from checkout to arrival.
 			</p>
 		</div>
 		<div class="about-panel">
-			<h3>What changed</h3>
+			<h3>Style</h3>
 			<p>
-				Clickable cards, cart flow, personal cabinet, better scroll sections and a
-				stronger visual effect system across the landing page.
+				Pieces that layer easily, move from day to night and keep the wardrobe
+				consistent across the collection.
 			</p>
 		</div>
 	</div>
@@ -191,7 +192,7 @@ $reviewCarouselItems = array_slice($reviewCarouselItems, 0, 6);
 			<div class="review-carousel-track">
 				<?php foreach ($reviewCarouselItems as $review): ?>
 					<article class="review-card review-carousel-card">
-						<div class="review-mark"><img src="img/skull.png" alt="" aria-hidden="true"></div>
+						<div class="review-mark" aria-hidden="true">@#$%&</div>
 						<p><?= htmlspecialchars($review['text']) ?></p>
 						<div class="review-rating" aria-label="Rating <?= (int)$review['rating']; ?> out of 5">
 							<?php for ($skull = 1; $skull <= 5; $skull++): ?>
@@ -206,12 +207,13 @@ $reviewCarouselItems = array_slice($reviewCarouselItems, 0, 6);
 		<button type="button" class="review-carousel-arrow review-carousel-arrow-right" data-review-next aria-label="Next reviews">&#10095;</button>
 	</div>
 
-	<form class="review-compose" data-review-form>
+	<form class="review-compose" data-review-form method="POST" action="insertcomment">
 		<div class="review-compose-head review-compose-head-center">
 			<p class="cart-note">Your review</p>
 			<h3>Leave feedback</h3>
 		</div>
-		<textarea data-review-text rows="4" maxlength="280" placeholder="Write your review here..." required></textarea>
+		<input type="hidden" name="id" value="0">
+		<textarea data-review-text name="comment" rows="4" maxlength="280" placeholder="Write your review here..." required></textarea>
 		<div class="review-rating-picker" data-review-rating-picker>
 			<input type="hidden" value="5" data-review-rating>
 			<button type="button" class="review-rating-choice is-selected" data-rating-value="1" aria-label="Rate 1 skull"><img src="img/skull.png" alt=""></button>
@@ -226,7 +228,12 @@ $reviewCarouselItems = array_slice($reviewCarouselItems, 0, 6);
 
 <div class="full-width-image" style="height: 50vh; background-image: url('img/void8.jpg'); background-position: center; background-attachment: scroll;">
 	<div class="hero-overlay" style="position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);"></div>
-	<a href="allproducts" class="hero-cta-button">SHOP NOW</a>
+	<div class="full-width-image-mask" aria-hidden="true"></div>
+	<?php if (!empty($currentUser)): ?>
+		<a href="all" class="hero-cta-button">SHOP NOW</a>
+	<?php else: ?>
+		<a href="login?next=all" class="hero-cta-button">SHOP NOW</a>
+	<?php endif; ?>
 </div>
 
 <div class="newsletter-popup" id="newsletterPopup" aria-hidden="true">
