@@ -72,7 +72,13 @@ class controllerAdminProduct {
     public static function productDeleteResult($id) {
         controllerAdmin::requireAdmin();
         $test = modelAdminProduct::getProductDelete($id);
+
+        if (defined('VOID_TEST_MODE') && VOID_TEST_MODE) {
+            return ['redirect' => 'productAdmin', 'deleted' => (bool)$test];
+        }
+
         header('Location: productAdmin');
+        exit;
     }
 }
 ?>

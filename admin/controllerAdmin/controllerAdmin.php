@@ -1,10 +1,21 @@
 <?php
 class controllerAdmin {
+    public static function isAdminSession() {
+        return !empty($_SESSION['sessionId']) && ($_SESSION['status'] ?? '') === 'admin';
+    }
+
     public static function requireAdmin() {
-        if (empty($_SESSION['sessionId']) || ($_SESSION['status'] ?? '') !== 'admin') {
-            header('Location: index.php');
-            exit;
+        if (self::isAdminSession()) {
+            return true;
         }
+
+        if (defined('VOID_TEST_MODE') && VOID_TEST_MODE) {
+            throw new RuntimeException('Access denied');
+        }
+
+        http_response_code(403);
+        header('Location: index.php');
+        exit;
     }
 
     public static function formLoginSite() {
@@ -55,6 +66,11 @@ class controllerAdmin {
                 modelAdminComments::deleteComment($id);
             }
         }
+
+        if (defined('VOID_TEST_MODE') && VOID_TEST_MODE) {
+            return ['redirect' => 'index.php'];
+        }
+
         header('Location: index.php');
         exit;
     }
