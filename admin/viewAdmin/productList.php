@@ -2,6 +2,7 @@
 <div class="container">
     <h2>Product Management</h2>
     <div style="margin: 20px 0;"><a href="productAdd" class="btn btn-success">Add product</a></div>
+    <div class="table-responsive">
     <table class="table table-striped table-bordered">
         <thead>
             <tr>
@@ -30,6 +31,7 @@
             <?php endforeach; ?>
         </tbody>
     </table>
+    </div>
 </div>
 <?php 
 $content = ob_get_clean(); 

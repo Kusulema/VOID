@@ -106,9 +106,12 @@ document.getElementById('buyNowBtn').addEventListener('click', function(){
         var data = {};
         try { data = JSON.parse(text); } catch (e) {}
         if (data && data.success) {
-            alert('Success, now you wait');
+            // Show a non-blocking success toast in site style
+            showOrderSuccessToast();
+            // Clear cart and update UI without forcing a full reload
             localStorage.removeItem('voidCart');
-            window.location.reload();
+            if (typeof updateCartBadge === 'function') updateCartBadge();
+            if (typeof renderCart === 'function') renderCart();
         } else if (data && data.missingProfile) {
             openOrderWarning(data);
         } else {
@@ -122,6 +125,27 @@ document.getElementById('buyNowBtn').addEventListener('click', function(){
         openOrderWarning({error: 'An error occurred while placing the order. Please try again.'});
     });
 });
+
+// Small success toast shown after order is placed
+function showOrderSuccessToast() {
+    var existing = document.getElementById('orderSuccessToast');
+    if (existing) {
+        existing.classList.remove('is-hidden');
+        clearTimeout(existing._hideTimer);
+    } else {
+        existing = document.createElement('div');
+        existing.id = 'orderSuccessToast';
+        existing.className = 'order-success-toast';
+        existing.innerHTML = '<p class="eyebrow">Order complete</p>' +
+            '<div class="order-success-body">Order accepted. Please check your email for confirmation — tracking code will be sent soon.</div>';
+        document.body.appendChild(existing);
+    }
+
+    // Auto hide after 6 seconds
+    existing._hideTimer = setTimeout(function(){
+        if (existing) existing.classList.add('is-hidden');
+    }, 6000);
+}
 </script>
 
 <?php

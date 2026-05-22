@@ -144,6 +144,50 @@ table tr:hover{background:#200;}
 .status-success{color:var(--success);}
 .status-error{color:var(--blood);}
 
+/* ================= MOBILE OVERRIDES ================= */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+    }
+
+    .boot-terminal {
+        margin: 18px 12px 12px;
+        padding: 0 4px;
+        font-size: 0.72rem;
+        letter-spacing: 1px;
+    }
+
+    .admin-container {
+        max-width: calc(100% - 16px);
+        margin: 12px auto;
+        padding: 16px 12px;
+    }
+
+    h2, h3 {
+        font-size: 1.4rem;
+        letter-spacing: 2px;
+    }
+
+    table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+
+    table th,
+    table td {
+        padding: 8px;
+    }
+
+    .btn,
+    button {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}
+
 </style>
 </head>
 <body class="glitch">
@@ -159,7 +203,7 @@ table tr:hover{background:#200;}
 
 <!-- ADMIN CONTENT -->
 <div class="admin-container">
-    <?php echo $content; ?>
+    <?php echo $content ?? ''; ?>
 </div>
 
 <script>

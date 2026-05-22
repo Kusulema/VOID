@@ -62,11 +62,14 @@
         html, body {
             min-height: 100%;
             height: 100%;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
         }
 
         body {
             background: #050505;
             font-family: 'Share Tech Mono', monospace;
+            overflow: auto !important;
         }
 
         section {
@@ -104,6 +107,13 @@
             color: #fff;
             border-color: rgba(255,255,255,.18);
             background: rgba(255,255,255,.06);
+        }
+
+        @media (max-width: 768px) {
+            section {
+                align-items: flex-start;
+                padding-top: 18px;
+            }
         }
 
         .cult-input {

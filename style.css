@@ -798,6 +798,118 @@ body.home-page .main-container {
     animation: snakeGrow linear infinite;
 }
 
+/* --- Order success toast (non-blocking) --- */
+.order-success-toast {
+    position: fixed;
+    right: 16px;
+    bottom: 22px;
+    z-index: 120;
+    background: linear-gradient(180deg, rgba(20,10,12,0.96), rgba(12,6,6,0.95));
+    border: 1px solid rgba(255, 59, 59, 0.12);
+    padding: 14px 18px;
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    color: var(--white);
+    max-width: 360px;
+    backdrop-filter: blur(6px);
+    text-align: left;
+    animation: toastIn 300ms ease;
+}
+.order-success-toast.is-hidden { display: none; }
+.order-success-toast .eyebrow { margin: 0 0 4px 0; font-size: 0.78rem; color: #ffcccb; }
+.order-success-toast .order-success-body { font-size: 0.9rem; color: var(--text); }
+
+@keyframes toastIn {
+    from { transform: translateY(8px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* --- Hero mobile visibility tweaks --- */
+@media (max-width: 768px) {
+    .entry-hero-bg { opacity: 0.82; background-position: center center !important; }
+    .entry-hero-overlay { background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.36)); }
+    .hero-visual { display: block; margin-top: 12px; }
+    .hero-visual-img { width: 100%; height: auto; object-fit: cover; opacity: 0.96; }
+    /* Keep the primary navigation visible on phones even without a toggler */
+    .nav-shell { flex-direction: column; align-items: stretch; gap: 0.65rem; }
+    .nav-left-stack,
+    .nav-right-stack { width: 100%; min-width: 0; height: auto; }
+    .nav-right-stack { order: 3; }
+    .nav-center.collapse,
+    .nav-center.collapse:not(.show),
+    .nav-center.navbar-collapse {
+        display: flex !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        height: auto !important;
+        flex-basis: auto;
+    }
+    .nav-center {
+        width: 100%;
+        justify-content: center;
+    }
+    .topmenu {
+        width: 100%;
+        display: grid !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 0.28rem 0.28rem;
+        padding: 0 0 0.2rem;
+    }
+    .topmenu .nav-item {
+        display: flex !important;
+        justify-content: center;
+        min-width: 0;
+    }
+    .topmenu .nav-item:nth-child(-n+3) {
+        grid-column: span 2;
+    }
+    .topmenu .nav-item:nth-child(n+4) {
+        grid-column: span 3;
+    }
+    .topmenu .nav-link {
+        width: 100%;
+        text-align: center;
+        white-space: normal;
+        font-size: 0.58rem;
+        line-height: 1.06;
+        padding: 0.16rem 0.15rem;
+    }
+}
+
+/* --- Modals: allow internal scrolling on small screens (profile / registration) --- */
+@media (max-width: 900px) {
+    .newsletter-popup { padding: 60px 12px 12px; }
+    .newsletter-modal { grid-template-columns: 1fr; min-height: auto; max-height: calc(100vh - 80px); overflow-y: auto; }
+    .account-popup { padding-top: 60px; }
+    .newsletter-modal .popup-close { top: 8px; right: 8px; }
+}
+
+/* Ensure order warning dialog is scrollable on small screens */
+.order-warning-modal .order-warning-dialog {
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* --- Admin table responsive fallback: allow horizontal scroll on mobile */
+@media (max-width: 900px) {
+    .container table { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .container table thead, .container table tbody, .container table tr { display: table; width: 100%; }
+}
+
+@media (max-width: 768px) {
+    .order-success-toast {
+        left: 50%;
+        right: auto;
+        top: 50%;
+        bottom: auto;
+        transform: translate(-50%, -50%);
+        width: calc(100vw - 24px);
+        max-width: 420px;
+        text-align: center;
+    }
+}
+
 .blood-snake::before {
     content: '';
     position: absolute;
@@ -1773,6 +1885,8 @@ body.home-page .main-container {
     align-items: flex-start;
     justify-content: center;
     padding: 180px 24px 24px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .newsletter-modal {
@@ -1792,7 +1906,7 @@ body.home-page .main-container {
 
 .account-popup .newsletter-modal {
     max-height: calc(100vh - 60px);
-    overflow: hidden;
+    overflow-y: auto;
     align-items: stretch;
 }
 
@@ -3236,7 +3350,23 @@ select:focus {
     }
 
     .topmenu {
-        gap: 0.45rem;
+        display: grid !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 0.22rem 0.22rem;
+    }
+
+    .topmenu .nav-item {
+        display: flex !important;
+        justify-content: center;
+        min-width: 0;
+    }
+
+    .topmenu .nav-item:nth-child(-n+3) {
+        grid-column: span 2;
+    }
+
+    .topmenu .nav-item:nth-child(n+4) {
+        grid-column: span 3;
     }
 
     .nav-shell {
