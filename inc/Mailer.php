@@ -1,6 +1,11 @@
 <?php
 class Mailer
 {
+    /**
+     * Runtime SMTP configuration. Values may be overridden from environment
+     * variables (see resolveSmtpConfig) or by loading a .env file when
+     * phpdotenv is available. Defaults provide a safe fallback for tests.
+     */
     private static $smtp = [
         'provider' => 'custom',
         'host' => '',
@@ -67,6 +72,8 @@ class Mailer
             'mailru' => ['host' => 'smtp.mail.ru', 'port' => 465, 'secure' => 'ssl'],
         ];
 
+        // Apply provider presets (e.g., gmail) when provider set and the
+        // explicit host/port/secure are not already configured.
         if (isset($presets[$provider])) {
             foreach ($presets[$provider] as $key => $value) {
                 if (empty($config[$key])) {
@@ -86,6 +93,8 @@ class Mailer
             'from_name' => 'VOID_MAIL_FROM_NAME',
         ];
 
+        // Overlay environment variables when present. This enables CI/test
+        // overrides without changing code. Ports are cast to int.
         foreach ($envMap as $key => $envName) {
             $value = self::readEnv($envName);
             if ($value !== '') {
@@ -108,7 +117,9 @@ class Mailer
 
     public static function send($to, $subject, $body, $isHtml = false)
     {
-        // TEST HOOK: if a test log file exists, write the email there and return true.
+        // TEST HOOK: CI and E2E tests create a JSONL file path that, when present,
+        // receives all outbound emails. This avoids sending real email during tests
+        // and provides a simple assertion point for E2E suites.
         $testLog = __DIR__ . '/../tests/E2E/test_mail_log.jsonl';
         if (file_exists($testLog)) {
             $entry = [
@@ -123,6 +134,8 @@ class Mailer
             return true;
         }
 
+        // Resolve the runtime SMTP config and verify we have enough
+        // information to attempt an SMTP send. If not, fall back to PHP `mail()`.
         $smtp = self::resolveSmtpConfig();
         $smtpReady = !empty($smtp['host'])
             && !empty($smtp['username'])
@@ -131,6 +144,8 @@ class Mailer
             && $smtp['from']['email'] !== 'no-reply@void.com';
 
         $autoload = __DIR__ . '/../vendor/autoload.php';
+        // When PHPMailer is available and the SMTP config looks usable,
+        // prefer SMTP for better reliability and authentication support.
         if ($smtpReady && file_exists($autoload)) {
             require_once $autoload;
             try {
@@ -157,9 +172,12 @@ class Mailer
             }
         }
 
+        // Last-resort: use PHP's `mail()` with basic headers. This path is
+        // intentionally tolerant because some environments (shared hosts)
+        // do not provide SMTP capability.
         $headers = [];
-    $headers[] = 'From: ' . $smtp['from']['name'] . ' <' . $smtp['from']['email'] . '>';
-    $headers[] = 'Reply-To: ' . $smtp['from']['email'];
+        $headers[] = 'From: ' . $smtp['from']['name'] . ' <' . $smtp['from']['email'] . '>';
+        $headers[] = 'Reply-To: ' . $smtp['from']['email'];
         $headers[] = 'MIME-Version: 1.0';
         $headers[] = $isHtml ? 'Content-Type: text/html; charset=utf-8' : 'Content-Type: text/plain; charset=utf-8';
 

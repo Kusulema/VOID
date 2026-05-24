@@ -255,6 +255,9 @@ class Controller {
             exit;
         }
 
+        // Ensure the logged-in user's profile contains required payment/shipping
+        // fields before proceeding. This delegates validation logic to the
+        // Register model so the same rules apply in other contexts.
         $currentUser = Register::getCurrentUser();
         list($profileComplete, $profileErrors) = Register::validateProfileForOrder($currentUser ?: []);
         if (!$profileComplete) {
@@ -273,7 +276,8 @@ class Controller {
         $items = $input['items'] ?? [];
         $total = $input['total'] ?? 0;
 
-        // build order summary
+        // Build human-readable order lines. Accepts either 'qty' or legacy 'q'
+        // keys and tolerates different item key names for title/price.
         $lines = [];
         foreach ($items as $it) {
             $qty = isset($it['qty']) ? (int)$it['qty'] : (isset($it['q']) ? (int)$it['q'] : 1);
@@ -282,6 +286,9 @@ class Controller {
             $lines[] = $qty . ' x ' . $title . ' @ ' . $price . ' €';
         }
 
+        // Prepare email notifications. Mailer::bootstrapEnv attempts to load
+        // environment helpers (phpdotenv) so CI or deployed instances can
+        // override SMTP settings without code changes.
         require_once __DIR__ . '/../inc/Mailer.php';
         Mailer::bootstrapEnv();
         $userSubject = '[THE VOID] The fruit is ripe. Your new skin is drying on rusted hooks.';
@@ -307,6 +314,10 @@ class Controller {
         if (!empty($currentUser['email'])) {
             $userMailSent = Mailer::send($currentUser['email'], $userSubject, nl2br($userBody), true);
         }
+        // Determine where admin notifications should be sent. Prefer a
+        // dedicated VOID_MAIL_ORDER_TO env var, fall back to VOID_MAIL_ADMIN_TO
+        // and finally to a safe default. This allows deployment-specific
+        // routing without code edits.
         $orderNotifyTo = (getenv('VOID_MAIL_ORDER_TO') ?: ($_ENV['VOID_MAIL_ORDER_TO'] ?? '') ?: ($_SERVER['VOID_MAIL_ORDER_TO'] ?? ''));
         if ($orderNotifyTo === '') {
             $orderNotifyTo = (getenv('VOID_MAIL_ADMIN_TO') ?: ($_ENV['VOID_MAIL_ADMIN_TO'] ?? '') ?: ($_SERVER['VOID_MAIL_ADMIN_TO'] ?? '') ?: 'admin@void.com');

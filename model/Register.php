@@ -14,10 +14,13 @@ class Register{
         $errors = [];
         $normalized = $data;
 
+        // Normalize and strip non-digits from numeric fields to allow flexible input
         $address = trim((string)($data['address'] ?? ''));
         $cardName = trim((string)($data['card_name'] ?? ''));
+        // Remove any non-digit characters from card number to accept spaced/dashed input
         $cardNumber = preg_replace('/\D+/', '', (string)($data['card_number'] ?? ''));
         $cardExpiry = trim((string)($data['card_expiry'] ?? ''));
+        // CVV should be digits only — strip formatting
         $cardCvv = preg_replace('/\D+/', '', (string)($data['card_cvv'] ?? ''));
 
         if ($address === '') {
@@ -122,6 +125,9 @@ class Register{
                     $params[':' . $column] = $value;
                 };
 
+                // Dynamically detect which user table columns exist and only
+                // include those in the INSERT. This makes the installer tolerant
+                // to schema variations (legacy column names, migrations etc.).
                 if ($db->hasColumn('users', 'username')) {
                     $appendColumn($columns, $params, 'username', $name);
                 } elseif ($db->hasColumn('users', 'name')) {
@@ -180,6 +186,7 @@ class Register{
                     $appendColumn($columns, $params, 'bank_account', '');
                 }
 
+                // Ensure wishlist column presence is optional; create JSON empty list
                 if ($db->hasColumn('users', 'wishlist')) {
                     $appendColumn($columns, $params, 'wishlist', json_encode([]));
                 }
@@ -220,6 +227,7 @@ class Register{
             }
 
             $db = new Database();
+            // Support login by email or legacy `login` column when available
             $where = '`email` = :identifier';
             if ($db->hasColumn('users', 'login')) {
                 $where = '(`email` = :identifier OR `login` = :identifier)';
@@ -316,6 +324,8 @@ class Register{
         $card_cvv = $normalized['card_cvv'];
 
         $db = new Database();
+        // Ensure required columns exist in the users table before attempting to update.
+        // This keeps the update resilient on databases missing newer columns.
         $ensureColumn = static function ($db, $column, $definition) {
             if (!$db->hasColumn('users', $column)) {
                 $db->executeRun('ALTER TABLE `users` ADD COLUMN `' . $column . '` ' . $definition);
@@ -331,6 +341,8 @@ class Register{
         $columns = [];
         $params = [];
 
+        // Helper to build SET segments for the UPDATE query while collecting
+        // prepared statement parameters. Keeps SQL building consistent.
         $appendColumn = static function (&$columns, &$params, $column, $value) {
             $columns[] = '`' . $column . '` = :' . $column;
             $params[':' . $column] = $value;
@@ -372,6 +384,7 @@ class Register{
             $appendColumn($columns, $params, 'bank_account', $bank_account);
         }
 
+        // If no columns were appended (nothing to update) return success.
         if (empty($columns)) {
             return [0 => true, 1 => ''];
         }
@@ -407,9 +420,9 @@ class Register{
 
     /**
      * Toggle product id in current user's wishlist. Ensures `wishlist` column exists.
-     * Returns updated wishlist array.
+     * Returns updated wishlist array, or `false` when the user is not logged in.
      * @param int $productId
-     * @return array
+     * @return array|false
      */
     public static function toggleWishlistItem($productId) {
         if (!isset($_SESSION['userId'])) {
